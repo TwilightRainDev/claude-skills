@@ -1,6 +1,6 @@
 ---
 name: EncodingGuide
-version: 1.1.0
+version: 1.2.0
 author: TwilightRain
 author_url: https://github.com/TwilightRainDev
 license: MIT
@@ -22,15 +22,17 @@ PowerShell 的管道和 heredoc 会在文本传递中自行解析 Unicode、转�
 # [正确] 正确 - 先写入临时 .py 文件，再执行
 ```
 
+---
+
 ## 一、编写 PowerShell 脚本时的行为准则
 
 当你在 Windows 上编写调用 Python 处理中文内容的 PowerShell 脚本时，遵守以下规则：
 
-### 规则 1：永远不要用管道传中文内容给 python -c
+### 规则 1：永远不要用管道传中文内容给 `python -c`
 
 `python -c` 经过 PowerShell 解析后，中文、特殊符号、转义符都会损坏。任何需要传递给 Python 的代码，都写入临时 `.py` 文件。
 
-### 规则 2：写临时文件用 Out-File + -LiteralPath + UTF8
+### 规则 2：写临时文件用 `Out-File` + `-LiteralPath` + `UTF8`
 
 ```powershell
 $script | Out-File -LiteralPath $env:TEMP\tool.py -Encoding UTF8
@@ -53,6 +55,8 @@ $content | Out-File pyproject.toml -Encoding UTF8
 # [正确] 正确 - 无 BOM
 [System.IO.File]::WriteAllText("pyproject.toml", $content, [System.Text.UTF8Encoding]::new($false))
 ```
+
+---
 
 ## 二、中文路径传参的三种方案
 
@@ -89,6 +93,8 @@ python $env:TEMP\tool.py
 
 `WriteAllBytes` 不经任何文本编码层，写什么得什么，零特殊字符风险。
 
+---
+
 ## 三、JSON 文件的关键配置（三项必须同时设置）
 
 修改或生成 JSON 文件时，必须同时设置三个参数，缺一不可：
@@ -115,6 +121,8 @@ with open(path, "w", encoding="utf-8") as f:
 | `indent=2` | 格式化缩进 | 单行不可读 blob，无法 diff |
 | `encoding="utf-8"` | 明确 UTF-8 编码 | 系统默认编码可能乱码 |
 
+---
+
 ## 四、PowerShell 特殊字符避坑速查
 
 | 场景 | 错误 | 正确 |
@@ -126,6 +134,8 @@ with open(path, "w", encoding="utf-8") as f:
 | heredoc 内含管道符 | `@ 内容含 \| @` | 改用 Base64 或临时文件 |
 
 **遇到复杂替换操作，直接调用 Python 的 `str.replace()` 或 `re.sub()`**，避免与 .NET 正则的差异纠缠。
+
+---
 
 ## 五、七大致命陷阱及解决方案
 
@@ -144,7 +154,7 @@ print(42)
 
 **解决**：放弃 heredoc，改用 `Out-File` 或 Base64。
 
-### 陷阱 2：PowerShell 变量插值污染 python -c
+### 陷阱 2：PowerShell 变量插值污染 `python -c`
 
 ```powershell
 # [错误] PowerShell 把 $x 展开为空 → Python 收到 " = 1; print()"
@@ -191,6 +201,8 @@ $lines = $lines[0..28] + $lines[30..$count]
 
 **解决**：对 Python 文件做结构性改动时，用 regex 匹配代码块整体替换（`re.sub`），不要逐行操作。缩进是语法，不是装饰。
 
+---
+
 ## 六、完整工作流模板
 
 生成任何涉及中文路径的 PowerShell+Python 脚本时，使用此模板：
@@ -222,21 +234,9 @@ python $env:TEMP\tool.py
 Remove-Item $env:TEMP\tool.py
 ```
 
-## 七、快速检查清单
+---
 
-当你或用户编写 PowerShell 脚本时，逐项检查以下各点。发现任一问题，立即采用对应的解决方案：
-
-1. **中文路径是否经过了管道或 heredoc？** → 改写成临时文件方案（方案 B）
-2. **JSON 读写是否设置了 `ensure_ascii=False` + `encoding="utf-8"` + `indent=2`？**
-3. **文件路径参数是否用了 `-LiteralPath` 而非 `-Path`？**
-4. **`python -c` 里是否包含变量、括号或特殊符号？** → 改用临时 `.py` 文件
-5. **生成的 Python 源码中是否使用了非 ASCII 标点（em dash 等）？** → 改用纯 ASCII
-6. **如果所有方式都失败，是否准备了 Base64 兜底？**（方案 C）
-7. **写 TOML 时，是否用了 `WriteAllText` + `UTF8Encoding($false)` 去 BOM？**
-8. **对 Python 文件做了逐行删除/替换操作？** → 改用 `re.sub` 整体替换代码块
-9. **检查 YAML/JSON 元数据时，只看了键所在行？** → 块标量正文在后续缩进行，用 Read 工具或完整解析验证
-
-## 八、检查文件内容与元数据时的误判陷阱（实战案例）
+## 七、检查文件内容与元数据时的误判陷阱（实战案例）
 
 本节教训来自一次真实误判：检查技能 SKILL.md 的 description 字段时，两种直觉做法都产生了"描述缺失"的假象，而文件本身完好。这与本技能的主题同构——**直觉方法在 Windows 环境下的输出不可轻信，下结论前先怀疑读取方法本身**。
 
@@ -263,3 +263,19 @@ head -6 SKILL.md | grep description
 任何"内容缺失 / 损坏 / 为空"的结论，先自问：**是文件的问题，还是读取方法的问题？**
 
 **解决**：用至少两种独立方式交叉验证（Read 工具 vs shell 命令 vs 解析脚本），得出相同结论才可断言。默认假设是读取方法有问题，而不是文件有问题。
+
+---
+
+## 八、快速检查清单（总结）
+
+当你或用户编写 PowerShell 脚本时，逐项检查以下各点。发现任一问题，立即采用对应的解决方案：
+
+1. **中文路径是否经过了管道或 heredoc？** → 改写成临时文件方案（方案 B）
+2. **JSON 读写是否设置了 `ensure_ascii=False` + `encoding="utf-8"` + `indent=2`？**
+3. **文件路径参数是否用了 `-LiteralPath` 而非 `-Path`？**
+4. **`python -c` 里是否包含变量、括号或特殊符号？** → 改用临时 `.py` 文件
+5. **生成的 Python 源码中是否使用了非 ASCII 标点（em dash 等）？** → 改用纯 ASCII
+6. **如果所有方式都失败，是否准备了 Base64 兜底？**（方案 C）
+7. **写 TOML 时，是否用了 `WriteAllText` + `UTF8Encoding($false)` 去 BOM？**
+8. **对 Python 文件做了逐行删除/替换操作？** → 改用 `re.sub` 整体替换代码块
+9. **检查 YAML/JSON 元数据时，只看了键所在行？** → 块标量正文在后续缩进行，用 Read 工具或完整解析验证

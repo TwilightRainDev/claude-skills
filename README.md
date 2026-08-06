@@ -7,6 +7,7 @@ TwilightRainDev 的 Claude Code 技能（skill）聚合仓库。
 | 技能 | 说明 |
 |------|------|
 | [EncodingGuide](EncodingGuide/SKILL.md) | Windows PowerShell 中文编码安全基线：乱码、中文路径、JSON/TOML、heredoc、管道、python -c、Out-File 必查 |
+| [CreatePrompts](CreatePrompts/SKILL.md) | 为任何 AI 模型创建/编写/改进提示词：刨根问底（苏格拉底式澄清）→ 生成 |
 
 ## 安装
 
