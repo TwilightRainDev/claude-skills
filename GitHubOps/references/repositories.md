@@ -34,12 +34,26 @@
 
 ### claude-skills 的备份约定
 
-- **来源**：`~/.claude/skills/`（本机即配置根下 `home\.claude\skills\`），技能目录平铺在仓库根
-- 该仓库同时是**发布渠道**：CreatePrompts / EncodingGuide 曾按版本发布（v1.0.0 / v1.2.0，见 commit `6e69cb3`、`39476a3`）；备份时若用本地工作版覆盖，旧发布版只留在 git 历史里
-- `README.md` 维护技能索引表，新增技能时要同步
+**同步只能跑脚本，不要手工 `cp` 后直接推送**——手工复制会把本机实值推上公开仓库：
+
+```
+bash <WORKSPACE>\Code\claude-skills-sync\sync.sh ["提交信息"]
+```
+
+脚本（`claude-skills-sync/`，**本身不进公开仓库**，内含实值映射）做四件事：
+
+1. **复制**：`~/.claude/skills/`（本机即配置根下 `home\.claude\skills\`）全量镜像，技能目录平铺在仓库根
+2. **脱敏**：对 `GitHubOps/`（4 个文件）与 `EnvRouter/SKILL.md` 做占位符替换——账号标识、noreply 邮箱、凭据目录与令牌/恢复码文件名、本机代理与 MITM CA、静默提权姿态、机器绝对路径，一律换成 `<account-id>`、`<CREDENTIALS_DIR>`、`<LOCAL_PROXY>`、`<WORKSPACE>` 之类示例文字。**本地原件保留真值**，只有公开副本是占位符
+3. **校验闸门**：扫全仓禁用串，命中就中止且不推送（退出码非 0）。新增敏感内容后若脚本报 FAIL，往 `sanitize.py` 的 `SUBS` 补映射再重跑
+4. **提交推送**：`git add -A --renormalize .` 后再 `git add -A .`（前者只作用于已跟踪文件，新增文件靠后者）、提交、推送带 502 重试
+
+其余约定：
+
+- `README.md` 由脚本按各 `SKILL.md` 的 frontmatter `description` 自动生成，不要手改
+- 该仓库同时是**发布渠道**：CreatePrompts / EncodingGuide 曾按版本发布（v1.0.0 / v1.2.0，见 commit `6e69cb3`、`39476a3`）；备份用本地工作版覆盖后，旧发布版只留在 git 历史里
 - **个人隐私人设不入库**：`PersonaEcho/skills/relationship/` 下按真人蒸馏的角色不备份
-- `__pycache__` / `*.pyc` 不入库；`SelfImprovingAgent` 这类空壳技能也无法入库（git 不跟踪空目录）
-- 文本统一 LF 入库，由 `.gitattributes` 的 `* text=auto eol=lf` 保证；`git add --renormalize` 只作用于已跟踪文件，**新增文件要另跑一次 `git add`**
+- `__pycache__` / `*.pyc` 不入库；`SelfImprovingAgent` 这类空壳技能无法入库（git 不跟踪空目录）
+- 文本统一 LF 入库，由 `.gitattributes` 的 `* text=auto eol=lf` 保证（脚本另做了显式 LF 归一）
 - 署名 `<account-login> <<account-id>+<account-login>@users.noreply.github.com>`
 
 ## 三、已消失的路径（勿再引用）

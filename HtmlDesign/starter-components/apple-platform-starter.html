@@ -113,7 +113,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   组件：导航栏（Navigation Bar）
+   组件：导航栏（Navigation Bar） [COMPONENT: nav-bar]
    leading 返回 / center 标题 / trailing 动作，三段式
    ========================================================================== */
 .navbar {
@@ -187,7 +187,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   组件：分组列表（Grouped List）
+   组件：分组列表（Grouped List） [COMPONENT: grouped-list]
    外层 --bg-grouped-primary + 内层 --bg-grouped-secondary
    容器圆角 10px 且内边距为 0，行本身不带圆角 —— 首尾行的直角由容器裁掉，
    因此这里不存在嵌套圆角，不触发同心等式。
@@ -285,7 +285,7 @@ label:focus-visible {
 .list-icon--orange { background: var(--system-orange); }
 
 /* ==========================================================================
-   组件：开关行（Switch Row）
+   组件：开关行（Switch Row） [COMPONENT: switch-row]
    开关本体 51x31，命中区靠 .switch 的 44px 内边距补足
    ========================================================================== */
 .switch {
@@ -334,7 +334,7 @@ label:focus-visible {
 .switch__input:focus-visible + .switch__track { box-shadow: var(--shadow-focus); }
 
 /* ==========================================================================
-   组件：卡片（Card）
+   组件：卡片（Card） [COMPONENT: card]
    默认变体：外圆角 --radius-card(16) + 内边距 --space-2(8) => 内圆角 --radius-md(8)
    ========================================================================== */
 .card {
@@ -399,7 +399,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   组件：按钮（主 / 次 / 破坏性）
+   组件：按钮（主 / 次 / 破坏性） [COMPONENT: button]
    胶囊形，最小高度 44px，按压 scale(0.98) + --duration-instant
    ========================================================================== */
 .btn-row {
@@ -459,7 +459,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   组件：输入框（聚焦态）
+   组件：输入框（聚焦态） [COMPONENT: input]
    面板外圆角 20 + 内边距 12 => 输入框内圆角 8（同心）
    ========================================================================== */
 .panel {
@@ -508,7 +508,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   组件：分段控件（Segmented Control）
+   组件：分段控件（Segmented Control） [COMPONENT: segmented-control]
    轨道外圆角 12 + 内边距 4 => 选中块内圆角 8（同心）
    轨道高 4 + 44 + 4 = 52，保证每段命中区 >= 44x44
    ========================================================================== */
@@ -560,7 +560,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   组件：搜索框（Search Field）
+   组件：搜索框（Search Field） [COMPONENT: search-field]
    ========================================================================== */
 .search { padding-inline: var(--space-4); }
 .search__field {
@@ -589,7 +589,7 @@ label:focus-visible {
 .search__field:focus-within { box-shadow: var(--shadow-focus); }
 
 /* ==========================================================================
-   组件：底部标签栏（Tab Bar）
+   组件：底部标签栏（Tab Bar） [COMPONENT: tab-bar]
    高 49px + 安全区；必须显示文字标签；选中实心图标，未选中线框
    ========================================================================== */
 .tabbar {
@@ -647,7 +647,7 @@ label:focus-visible {
 }
 
 /* ==========================================================================
-   遮罩 + 组件：Sheet（含抓取条）
+   遮罩 + 组件：Sheet（含抓取条） [COMPONENT: sheet]
    500ms --ease-drawer 位移，遮罩同长淡入淡出，两者读作同一个表面
    ========================================================================== */
 .scrim {
@@ -725,7 +725,7 @@ label:focus-visible {
 .sheet__body .btn-row { margin-top: var(--space-4); }
 
 /* ==========================================================================
-   组件：警告框（Alert）
+   组件：警告框（Alert） [COMPONENT: alert]
    宽 270px，圆角 14px；最多 3 个按钮；取消在 leading 侧
    ========================================================================== */
 .alert {
@@ -802,7 +802,7 @@ label:focus-visible {
 <body>
 <div class="screen">
 
-  <!-- ==================== 组件：导航栏（Navigation Bar） ==================== -->
+  <!-- ==================== 组件：导航栏（Navigation Bar） ==================== [COMPONENT: nav-bar] -->
   <header class="navbar">
     <div class="navbar__leading">
       <button class="icon-btn" type="button" data-touch aria-label="返回">
@@ -818,12 +818,12 @@ label:focus-visible {
   <main>
     <p class="demo-note">mode: platform 起步组件包。每个组件上方有 HTML 注释标名，按名整段拷走即可。</p>
 
-    <!-- ==================== 组件：分组列表（Grouped List） ==================== -->
+    <!-- ==================== 组件：分组列表（Grouped List） ==================== [COMPONENT: grouped-list] -->
     <section class="group">
       <h2 class="group__header">网络与连接</h2>
       <div class="group__list">
 
-        <!-- 组件：信息行（Info Row）+ 披露指示符 -->
+        <!-- 组件：信息行（Info Row）+ 披露指示符 [COMPONENT: info-row] -->
         <a class="list-row list-row--icon list-row--link" href="#">
           <span class="list-icon list-icon--blue">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.2a15 15 0 0 1 19 0"/><path d="M6.2 13a10 10 0 0 1 11.6 0"/><path d="M9.6 16.6a5 5 0 0 1 4.8 0"/><circle cx="12" cy="20" r="1"/></svg>
@@ -842,7 +842,7 @@ label:focus-visible {
           <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
         </a>
 
-        <!-- 组件：开关行（Switch Row） -->
+        <!-- 组件：开关行（Switch Row） [COMPONENT: switch-row] -->
         <label class="list-row list-row--icon list-row--link">
           <span class="list-icon list-icon--orange">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2a5.6 5.6 0 0 0-5.6 5.6v3L5 15.4h14l-1.4-3.6v-3A5.6 5.6 0 0 0 12 3.2Z"/><path d="M10 18.4a2.1 2.1 0 0 0 4 0"/></svg>
@@ -862,7 +862,7 @@ label:focus-visible {
       <h2 class="group__header">通用</h2>
       <div class="group__list">
 
-        <!-- 组件：信息行（无图标变体，分隔线内缩 16px） -->
+        <!-- 组件：信息行（无图标变体，分隔线内缩 16px） [COMPONENT: info-row-plain] -->
         <a class="list-row list-row--link" href="#">
           <span class="list-row__label">关于本机</span>
           <span class="list-row__value">2.1.233</span>
@@ -878,7 +878,7 @@ label:focus-visible {
       </div>
     </section>
 
-    <!-- ==================== 组件：卡片（Card） ==================== -->
+    <!-- ==================== 组件：卡片（Card） ==================== [COMPONENT: card] -->
     <section class="group">
       <h2 class="group__header">卡片</h2>
       <article class="card">
@@ -891,7 +891,7 @@ label:focus-visible {
         </div>
       </article>
 
-      <!-- 组件：卡片（统计变体，同心 16 + 4 = 20） -->
+      <!-- 组件：卡片（统计变体，同心 16 + 4 = 20） [COMPONENT: stat-card] -->
       <div class="stat-card">
         <div class="stat-card__cell">
           <span class="stat-card__value">82</span>
@@ -904,7 +904,7 @@ label:focus-visible {
       </div>
     </section>
 
-    <!-- ==================== 组件：按钮（主 / 次 / 破坏性） ==================== -->
+    <!-- ==================== 组件：按钮（主 / 次 / 破坏性） ==================== [COMPONENT: button] -->
     <section class="group">
       <h2 class="group__header">按钮</h2>
       <div class="btn-row">
@@ -918,7 +918,7 @@ label:focus-visible {
       </div>
     </section>
 
-    <!-- ==================== 组件：输入框（聚焦态） ==================== -->
+    <!-- ==================== 组件：输入框（聚焦态） ==================== [COMPONENT: input] -->
     <section class="group">
       <h2 class="group__header">输入</h2>
       <div class="panel">
@@ -928,7 +928,7 @@ label:focus-visible {
       </div>
     </section>
 
-    <!-- ==================== 组件：分段控件（Segmented Control） ==================== -->
+    <!-- ==================== 组件：分段控件（Segmented Control） ==================== [COMPONENT: segmented-control] -->
     <section class="group">
       <h2 class="group__header">分段控件</h2>
       <div class="segmented" role="radiogroup" aria-label="时间范围">
@@ -947,7 +947,7 @@ label:focus-visible {
       </div>
     </section>
 
-    <!-- ==================== 组件：搜索框（Search Field） ==================== -->
+    <!-- ==================== 组件：搜索框（Search Field） ==================== [COMPONENT: search-field] -->
     <section class="group">
       <h2 class="group__header">搜索</h2>
       <div class="search" role="search">
@@ -959,7 +959,7 @@ label:focus-visible {
     </section>
   </main>
 
-  <!-- ==================== 组件：底部标签栏（Tab Bar） ==================== -->
+  <!-- ==================== 组件：底部标签栏（Tab Bar） ==================== [COMPONENT: tab-bar] -->
   <nav class="tabbar" aria-label="主导航">
     <a class="tabbar__item" href="#" aria-current="page" data-touch>
       <span class="tabbar__icon-wrap">
@@ -995,7 +995,7 @@ label:focus-visible {
     </a>
   </nav>
 
-  <!-- ==================== 组件：Sheet（遮罩 + 抓取条 + detents） ==================== -->
+  <!-- ==================== 组件：Sheet（遮罩 + 抓取条 + detents） ==================== [COMPONENT: sheet] -->
   <div class="scrim" data-scrim-for="sheet-demo" aria-hidden="true"></div>
   <section class="sheet sheet--medium" id="sheet-demo" data-animated role="dialog" aria-modal="true" aria-labelledby="sheet-title">
     <div class="sheet__grabber" aria-hidden="true"></div>
@@ -1023,7 +1023,7 @@ label:focus-visible {
     </div>
   </section>
 
-  <!-- ==================== 组件：警告框（Alert，270px） ==================== -->
+  <!-- ==================== 组件：警告框（Alert，270px） ==================== [COMPONENT: alert] -->
   <div class="scrim" data-scrim-for="alert-demo" aria-hidden="true"></div>
   <div class="alert" id="alert-demo" data-animated role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-desc">
     <div class="alert__content">
