@@ -44,11 +44,11 @@ Export the current HTML design as a print-friendly HTML file optimized for PDF e
 - Add a 500ms delay just to be safe
 - Use your judgement; there may be other things to wait for besides these depending on the page!
 
-5. **Call the `open_for_print` tool** with the project-relative path to the print-ready file.
+5. **Deliver it for printing** — the exact tool is harness-specific (see your harness reference). On the web product this is `open_for_print`; **in Claude Code that tool does not exist**. There, serve the `-print.html` over the project's `designs` HTTP server and hand the user the served URL so they can print it themselves — full steps in [`../references/claude.md`](../references/claude.md) → "Exporting to PDF (print)".
 
 ## Important Notes
 
 - The goal is a file that looks great when saved as PDF via the browser's print dialog
 - Maintain visual fidelity — the PDF should look as close to the original design as possible
 - For slide decks or multi-section designs, each slide/section should be on its own page
-- The `-print.html` is plumbing for the print tab, not a deliverable — `open_for_print` is the only delivery step. Do NOT `present_fs_item_for_download` it; its relative asset paths only resolve via the project file server and break when opened standalone.
+- The `-print.html` is plumbing for the print tab, not a deliverable — opening it in the print view is the only delivery step. Do NOT `present_fs_item_for_download` it; its relative asset paths only resolve via the project file server and break when opened standalone. (In Claude Code, the equivalent of "opening it in the print view" is serving it over HTTP and giving the user the URL — see [`../references/claude.md`](../references/claude.md) → "Exporting to PDF (print)".)

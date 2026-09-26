@@ -4,6 +4,8 @@ description: "Send to Canva\nExport as an editable Canva design"
 ---
 # Send to Canva
 
+> **[本机不可用]** 本机**没有 Canva 连接器**，`canva__create-design-import-job` / `canva__import-design-from-url` 都不存在，`super_inline_html`（打包服务）与 `get_public_file_url`（发布公网 URL）也没有本地替代 —— **整条链路走不通**，在第 1 步就会 STOP。若用户只是想要一个可下载的单文件，可另走 [`save-as-standalone-html.md`](save-as-standalone-html.md)。见 [`../references/claude.md`](../references/claude.md) → "Web tools with no drop-in equivalent"。
+
 Export the current design to Canva as an editable design.
 
 Canva imports a self-contained HTML file via URL. The flow is: confirm Canva is connected, bundle the design into a single HTML file, expose it at a public URL, then ask Canva to import from that URL.

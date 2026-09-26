@@ -1,6 +1,6 @@
 # Claude Code tools — reference
 
-The harness-specific tools `system-prompt.md` relies on, for when you are running inside **Claude Code**. The main prompt only names capabilities ("ask the user", "preview", "screenshot", "debug"); this doc gives the exact Claude Code tool, signature, and call pattern. Generic tools (`Bash`, `Read`/`Write`/`Edit`/`Glob`, `gh`) are the same everywhere and aren't covered here.
+The harness-specific tools this skill relies on, for when you are running inside **Claude Code**. The main prompt (`SKILL.md`) only names capabilities ("ask the user", "preview", "screenshot", "debug"); this doc gives the exact Claude Code tool, signature, and call pattern. Generic tools (`Bash`, `Read`/`Write`/`Edit`/`Glob`, `gh`) are the same everywhere and aren't covered here.
 
 ## Web tool → Claude Code tool map
 
@@ -20,8 +20,56 @@ The upstream prompt references Claude.ai web tools that do not exist in Claude C
 | `invoke_skill("X")` / `invoke the "X" skill` | `Read` the matching `built-in-skills/<file>.md` |
 | `gen_pptx` | `Bash`: serve the deck over HTTP, write the gen_pptx input object to a JSON file, then `node <skill>/agents/gen-pptx/dist/cli.mjs --url <servedDeckUrl> --config <jsonPath> --out <dir>` — see "Exporting to PPTX" below |
 | `/projects/<projectId>/<path>` | ordinary filesystem paths (relative to cwd, or absolute) |
+| `open_for_print` | **Has a local equivalent.** Serve the print file over the project's HTTP server and hand the user the URL — see "Exporting to PDF (print)" below |
+| `readFileBinary` | **Has a local equivalent.** `Read` for text; `Bash` + Node `fs.readFileSync` for bytes. The snippet in [`read-pdf.md`](../built-in-skills/read-pdf.md) is written for the browser sandbox and needs a Node rewrite — see "Web tools with no drop-in equivalent" below |
+| `present_fs_item_for_download` | Nearest local tool is `SendUserFile`. **The surrounding logic does not transfer** — see "Web tools with no drop-in equivalent" below |
+| `super_inline_html` | **No drop-in equivalent.** The bundling *goal* has a local analogue ([`save-as-standalone-html.md`](../built-in-skills/save-as-standalone-html.md)); the Canva flow that consumes it does not — see below |
+| `get_public_file_url` | **No equivalent.** Claude Code cannot publish a file to a public URL |
+| `generate_sound` | **No equivalent.** Requires the hosted ElevenLabs backend behind the web product's `generate_sound` |
+| `generate_figma_design` | **No equivalent on this machine.** Requires the Figma MCP, which is not installed here — [`send-to-figma.md`](../built-in-skills/send-to-figma.md) says the same in its own Notes |
+| `window.claude.complete` | **No equivalent.** A hosted-artifact-only runtime global; a locally served page has no such object on `window` |
+| `canva__create-design-import-job`, `canva__import-design-from-url` | **No equivalent.** Requires the Canva connector / API |
 
 _Video export has no web-tool equivalent — see "Exporting to video" below._
+
+### Web tools with no drop-in equivalent
+
+The six tools above marked "no equivalent" / "no drop-in equivalent" are **not** substitutions you can improvise. Each one is missing a specific backend, and guessing your way past it produces a silently broken deliverable:
+
+| Tool | What is actually missing |
+|---|---|
+| `get_public_file_url` | Any way to publish a local file to a public URL. There is no local substitute — a `localhost` URL is not reachable by a third-party service. |
+| `generate_sound` | The ElevenLabs backend the web product proxies to. No API key or local model is configured here. |
+| `generate_figma_design` | The Figma MCP server. Not installed in this environment. |
+| `window.claude.complete` | The hosted runtime that injects `window.claude.complete` into artifacts. A locally served page has no such global, and nothing here provides the quota-backed proxy behind it. |
+| `canva__create-design-import-job` / `canva__import-design-from-url` | The Canva connector and its API credentials. |
+| `present_fs_item_for_download` | The web product's download-pane concept. `SendUserFile` delivers a file to the user, but the flow built around this tool (e.g. Canva's `origin: 'canva_fallback'`) has no meaning here. |
+
+If a user asks for one of these capabilities, **say plainly that it is unavailable in Claude Code and why** — do not silently substitute something weaker, and do not call a tool that does not exist.
+
+### Exporting to PDF (print)
+
+The web product's [`save-as-pdf.md`](../built-in-skills/save-as-pdf.md) ends by calling `open_for_print`, which **does not exist in Claude Code**. There is a local equivalent; this is the exact path:
+
+`save-as-pdf` writes a print-ready HTML next to the source file (e.g. `designs/<project>/deck-print.html`, or `web/index-print.html` for `web/index.html`). Its relative asset paths are the reason it must be served rather than opened standalone.
+
+1. **Reuse the one `designs` server** — do not start a second one. If it is not already running:
+
+   ```bash
+   python3 -m http.server 4311 --directory designs
+   ```
+
+2. **Resolve the served URL** for the print file. The server root is the `designs/` directory, so a file at `designs/<project>/deck-print.html` is at:
+
+   ```text
+   http://localhost:4311/<project>/deck-print.html
+   ```
+
+3. **Confirm it actually serves** before handing it over — check the HTTP status and that the page body is complete, e.g. `Bash`: `curl -s -o /dev/null -w '%{http_code}' <url>`, or open the URL through the Claude Preview MCP (see "Verification & debug" above).
+
+4. **Hand the user the URL** and tell them to print it themselves (browser Print → Save as PDF). Do **not** `SendUserFile` the `-print.html` on its own: its relative paths only resolve under the project server, so a standalone copy renders with missing styles and images.
+
+The user-side step (choosing "Save as PDF" in their browser's print dialog) is the only part no agent can perform or verify — the file the agent produces and serves is everything up to that point.
 
 ## AskUserQuestion (clarifying questions)
 

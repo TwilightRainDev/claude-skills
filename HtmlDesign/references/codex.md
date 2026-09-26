@@ -1,6 +1,6 @@
 # Codex Agent tools — reference
 
-The harness-specific tools `system-prompt.md` relies on, for when you are running inside **Codex Agent**. The main prompt only names capabilities ("ask the user", "preview", "screenshot", "debug"); this doc gives the Codex call pattern. Generic tools (shell, file read/write/edit/search, `gh`) are not covered here.
+The harness-specific tools this skill relies on, for when you are running inside **Codex Agent**. The main prompt (`SKILL.md`) only names capabilities ("ask the user", "preview", "screenshot", "debug"); this doc gives the Codex call pattern. Generic tools (shell, file read/write/edit/search, `gh`) are not covered here.
 
 ## Web tool → Codex equivalent
 

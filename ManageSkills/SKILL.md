@@ -1,44 +1,54 @@
 ---
 name: ManageSkills
-description: 创建、改进、评测、部署技能全周期；部署前验证技能。
+description: 当要创建技能、改进或评测现有技能、给技能改名、部署技能或部署前验证技能时使用。
 ---
-# 技能改名字
+
+# ManageSkills（技能全周期治理）
+
+技能的创建、改进、评测、部署与改名的全周期治理。
+
+## 何时使用
+
+- 创建新技能，或改进、评测现有技能。
+- 部署技能之前做验证。
+- 给技能改名，或消解与已有技能的路由歧义。
+- 编写或优化技能的 `description` 以改善触发率。
+
+## 技能改名字
 
 命名约束：
-- 用户级技能必须大驼峰,目录名 = frontmatter name 一致，第三方技能kebab-case也需要收编进规范。
+
+- 用户级技能必须大驼峰，目录名 = frontmatter name 一致；第三方技能 kebab-case 也需要收编进规范。
 - 要与已有技能名字形成清晰分工，避免路由歧义。
 - 名字要能在 Ask 路由表的特定意图下被自然触发。
 - 任何命名都需要与用户商量。
 
 推荐：
 
-1. 包含这个技能的灵魂：阅读SKILL.md，与已有技能形成干净分工。
+1. 包含这个技能的灵魂：阅读 SKILL.md，与已有技能形成干净分工。
 2. 从用途命名：好记、触发意图直接。
 3. 从机制命名：参考它最硬的规则。直白无歧义。
 4. 对用户语义强。
 
 不推荐：
+
 - 短但撞名多、语义泛化。
 - 只有一半功能的名字。
 - 任何含已有技能的名字。
 
-提醒：改名不只是改目录，需要同步的地方包括frontmatter name、SKILL.md 正文标题、Ask 路由表、skill-ecosystem记忆里的安装记录。
+提醒：改名不只是改目录，需要同步的地方包括 frontmatter name、SKILL.md 正文标题、Ask 路由表、skill-ecosystem 记忆里的安装记录。
 
-# 创建技能
-
-## 概述
+## 创建技能
 
 **创建技能就是将测试驱动开发应用于流程文档。**
 
 **核心原则：** 如果你没有观察过智能体在没有该技能时失败，你就无法确定该技能是否教导了正确的内容。
 
-**必需前置知识：** 在使用本技能之前，你**必须**理解 TDD。该技能定义了基本的 RED-GREEN-REFACTOR 周期；本技能将 TDD 适配到流程文档中。
+**必需前置知识：** 理解 TDD。它定义了基本的 RED-GREEN-REFACTOR 周期，下面的流程就是该周期在流程文档上的套用。
 
 ## 铁律
 
-```
-没有先有失败测试，就不该有技能
-```
+**没有先有失败测试，就不该有技能。**
 
 这适用于**新技能**和**对现有技能的编辑**。
 
@@ -91,13 +101,11 @@ description: 创建、改进、评测、部署技能全周期；部署前验证�
 | **重构** | 在维持合规的同时堵住漏洞 |
 | **先写测试** | 在写技能之前运行基线场景 |
 
----
-
 ## 完整流程
 
 ### 第 1 步 — 捕获意图
 
-首先理解该技能应该做什么。如果当前对话中包含用户想要捕获的工作流（使用的工具、步骤顺序、所做的修正、输入/输出格式），则从中提取答案。
+明确该技能应该做什么。当前对话中包含要捕获的工作流（使用的工具、步骤顺序、所做的修正、输入/输出格式）时 → 从中提取答案。
 
 1. 这个技能应该让 Claude 能够做什么？
 2. 这个技能应该在什么时候触发？（什么用户短语/上下文）
@@ -114,24 +122,12 @@ description: 创建、改进、评测、部署技能全周期；部署前验证�
 
 **按技能类型的测试方法：**
 
-**纪律强化型：**
-- 学术性问题：他们理解规则吗？
-- 压力场景：他们在压力下能遵守吗？
-- 多重压力组合：时间 + 沉没成本 + 疲惫
-- 识别合理化借口并添加明确的对应反驳
-
-**技术型：**
-- 应用场景：他们能正确应用该技术吗？
-- 变体场景：他们能处理边缘情况吗？
-- 信息缺失测试：指令存在空白吗？
-
-**模式型：**
-- 识别场景：他们能识别何时应用该模式吗？
-- 反例：他们知道何时不应该应用吗？
-
-**参考型：**
-- 检索场景：他们能找到正确的信息吗？
-- 缺口测试：常见用例是否被覆盖？
+| 技能类型 | 测试方法 |
+|------|------|
+| **纪律强化型** | 学术性问题：他们理解规则吗？压力场景：他们在压力下能遵守吗？多重压力组合：时间 + 沉没成本 + 疲惫。识别合理化借口并添加明确的对应反驳。 |
+| **技术型** | 应用场景：他们能正确应用该技术吗？变体场景：他们能处理边缘情况吗？信息缺失测试：指令存在空白吗？ |
+| **模式型** | 识别场景：他们能识别何时应用该模式吗？反例：他们知道何时不应该应用吗？ |
+| **参考型** | 检索场景：他们能找到正确的信息吗？缺口测试：常见用例是否被覆盖？ |
 
 将测试提示保存到 `evals/evals.json`（契约见 `references/eval-contracts.md`）。
 
@@ -158,12 +154,12 @@ description: 当 [特定触发条件和症状] 时使用
 ```
 
 - 名称：仅由字母、数字和连字符组成。使用主动语态，动词优先（`creating-skills` 而非 `skill-creation`）。
-- **用户约定（2026-08-04）：** frontmatter 中的 `name` 与目录名一律使用大驼峰（如 `CreatePrompts/`、`ReviewPr/`），两处保持一致。
+- **用户约定：** frontmatter 中的 `name` 与目录名一律使用大驼峰（如 `CreatePrompts/`、`ReviewPr/`），两处保持一致。
 - **描述 等于 何时使用，而非技能做什么。** 描述应该只描述触发条件。不要总结技能的流程或工作流 —— 测试表明智能体会走捷径，只读描述而不读完整技能。
 - 使用第三人称（注入到系统提示中）。
 - 总长度最多 1024 字符；如有可能保持低于 500。
 
-**正文结构（推荐）：** 按 `references/skill-structure-template.md` 的骨架组织（概述 / 何时使用 / 核心流程 / 快速参考 / 常见错误 / 红旗信号），frontmatter 约束（大驼峰命名、描述 = 仅触发条件）也在该文件。
+**正文结构（推荐）：** 按 `references/skill-structure-template.md` 的骨架组织（概述 / 何时使用 / 核心流程 / 快速参考 / 常见错误 / 红旗信号），frontmatter 约束（大驼峰命名、描述 = 仅触发条件）也在该文件。改写现有技能时，正文的语言与形态契约见 `references/skill-voice-contract.md`。
 
 **渐进式披露：** SKILL.md 最好在 500 行以内。对于更庞大的内容，移至参考文件：
 ```
@@ -178,16 +174,16 @@ skill-name/
 
 大段代码块（≥15 行）有两个缺点：需求未命中该技能时，代码块占据上下文变成噪音；命中时又过于僵化，模型能力越强越被多余约束拖累。处置顺序：
 
-1. **能变成思路引导的 → 思路引导。** 正文、清单、决策树被包进代码围栏的"伪代码块"，去围栏转普通文本、引用块或表格。流程图（digraph/mermaid）同理——`当 X → 走 Y` 的文字决策链比图更贴合模型心智。
-2. **必须的功能模块 → references/。** 可执行代码、数据契约（JSON schema）、输出/展示模板、完整过程（如 OAuth 流程），抽到 references/ 下，SKILL.md 只留一行指针（"完整代码见 references/xxx.md"）。
+1. **能变成思路引导的 → 思路引导。** 正文、清单、决策树被包进代码围栏的“伪代码块”，去围栏转普通文本、引用块或表格。流程图（digraph/mermaid）同理——`当 X → 走 Y` 的文字决策链比图更贴合模型心智。
+2. **必须的功能模块 → references/。** 可执行代码、数据契约（JSON schema）、输出/展示模板、完整过程（如 OAuth 流程），抽到 references/ 下，SKILL.md 只留一行指针（“完整代码见 references/xxx.md”）。
 3. **纯装饰噪音 → 删。** 如 ASCII 大横幅。
 4. **短操作命令保留 inline。** 1-6 行命令示例是路由级的操作指引，不属于大段代码。
 
-判断标准：留在 SKILL.md 的，是"该什么时候用、往哪走"；挪到 references/ 的，是"具体怎么执行"。命中时按需读 references，反而比全文内嵌更快。
+判断标准：留在 SKILL.md 的，是“该什么时候用、往哪走”；挪到 references/ 的，是“具体怎么执行”。命中时按需读 references，反而比全文内嵌更快。
 
 #### 编写原则
 
-- **解释为什么。** LLM 具有良好的心智理论能力。如果你发现自己写了全大写的 ALWAYS/NEVER，请重新组织并解释背后的推理。
+- **解释为什么。** LLM 具有良好的心智理论能力。写了全大写的 ALWAYS/NEVER 时 → 重新组织并解释背后的推理。
 - **一个优秀的例子胜过许多平庸的例子。** 选择最相关的语言。不要用多种语言稀释内容。
 - **仅在非显而易见的决策点使用流程图** —— 不要用于参考材料、线性指令或代码示例。
 - **指导形式必须与失败类型匹配：**
@@ -218,7 +214,7 @@ skill-name/
 1. **每次调用一个全新上下文样本** —— 原始 API 调用，或者如果你没有 API 访问权限，则使用单次子智能体。系统提示 等于 指导所处的现实上下文（完整技能或提示模板，而非孤立的指导）；用户消息 等于 一个引诱失败的任务。
 2. **始终包含无指导对照组。** 如果对照组没有表现出该失败，那就没有什么可修复的 —— 停止，不要编写该指导。
 3. **每个变体至少 5 次重复。** 单次样本会撒谎。
-4. **手动阅读每个被标记的匹配项。** 如果你愿意，可以程序化评分，但模板回显和引用的反例会伪装成命中；仅靠自动化计数会同时高估失败和成功。
+4. **手动阅读每个被标记的匹配项。** 程序化评分可行，但模板回显和引用的反例会伪装成命中；仅靠自动化计数会同时高估失败和成功。
 5. **方差是一个指标。** 当指导落地后，各次重复会收敛到相同形状。五次重复出现五种不同解释，意味着措辞没有约束力 —— 在增加文字之前收紧形式。
 
 微测试验证措辞；对于纪律型技能，它们不能替代压力场景。
@@ -274,14 +270,17 @@ skill-name/
 
 #### 评分和聚合
 
+以下脚本由 skill-creator 工具链提供，本机实测根目录为 `E:/work_zone/ClaudeCode/home/.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator`。`scripts/` 是 Python 包，命令须带 `PYTHONPATH` 指向该根目录。该根目录不存在时 → 跳过脚本步骤，改人工汇总。
+
 1. **对每次运行评分** —— 根据输出评估断言。保存到 `grading.json`。
 2. **聚合为基准：**
    ```bash
-   python -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <name>
+   PYTHONPATH="E:/work_zone/ClaudeCode/home/.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator" \
+     python -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <name>
    ```
 3. **启动查看器：**
    ```bash
-   nohup python <skill-creator-path>/eval-viewer/generate_review.py \
+   nohup python "E:/work_zone/ClaudeCode/home/.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator/eval-viewer/generate_review.py" \
      <workspace>/iteration-N \
      --skill-name "my-skill" \
      --benchmark <workspace>/iteration-N/benchmark.json \
@@ -308,7 +307,7 @@ skill-name/
 
 #### 如何思考改进
 
-1. **从反馈中归纳。** 不要过度拟合测试示例。如果某个模式反复失败，尝试不同的隐喻或方法，而不是增加压迫性的 MUST。
+1. **从反馈中归纳。** 不要过度拟合测试示例。某个模式反复失败时 → 换一个隐喻或方法，而不是增加压迫性的 MUST。
 2. **保持提示简洁。** 删除没有发挥应有作用的内容。阅读对话记录，而不仅仅是最终输出。
 3. **解释为什么。** LLM 很聪明 —— 传递理解，而非死板规则。
 4. **寻找跨测试用例的重复工作。** 如果所有 3 个测试子智能体都编写了类似的辅助脚本，将该脚本打包到技能的 `scripts/` 目录中。
@@ -325,8 +324,6 @@ skill-name/
 - 用户表示满意
 - 反馈全部为空
 - 你没有取得有意义的进展
-
----
 
 ## 防止合理化的强化
 
@@ -381,8 +378,6 @@ skill-name/
 
 **范围：** 本工具包适用于纪律性失败 —— 智能体知道规则但在压力下跳过它。对于形状错误或遗漏元素，参见上面的“指导形式必须与失败类型匹配”。
 
----
-
 ## 技能发现优化（SDO）
 
 ### 编写丰富的描述
@@ -427,7 +422,8 @@ description: 当测试存在竞态条件、时间依赖或通过/失败不一致
 2. **用户评审** 通过 HTML 模板查看评估集。
 3. **运行优化循环：**
    ```bash
-   python -m scripts.run_loop \
+   PYTHONPATH="E:/work_zone/ClaudeCode/home/.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator" \
+     python -m scripts.run_loop \
      --eval-set <path-to-trigger-eval.json> \
      --skill-path <path-to-skill> \
      --model <model-id> \
@@ -435,8 +431,6 @@ description: 当测试存在竞态条件、时间依赖或通过/失败不一致
      --verbose
    ```
 4. 将 `best_description` 应用到技能的前置元数据中。选择依据是测试分数而非训练分数，以避免过拟合。
-
----
 
 ## 进阶：盲测比较
 
@@ -446,29 +440,38 @@ description: 当测试存在竞态条件、时间依赖或通过/失败不一致
 
 这是可选的，需要子智能体，大多数用户不需要。人工评审循环通常就足够了。
 
----
-
-### 更新现有技能
+## 更新现有技能
 
 1. **保留原始名称。** 使用相同的目录名和 `name` 前置字段。
 2. **在编辑前复制到可写位置**（已安装的技能路径可能为只读）。
 3. **从副本打包。**
 
----
-
 ## 打包与发布
 
-1. **打包技能：**
+1. **打包技能：** 需 skill-creator 工具链与 PyYAML；本机当前未安装 PyYAML，该步会报 `ModuleNotFoundError: No module named 'yaml'`。
    ```bash
-   python -m scripts.package_skill <path/to/skill-folder>
+   PYTHONPATH="E:/work_zone/ClaudeCode/home/.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator" \
+     python -m scripts.package_skill <path/to/skill-folder>
    ```
    生成一个 `.skill` 文件。
 
 2. **安装：** 引导用户到生成的 `.skill` 文件路径，以便他们安装。
 
-3. **提交** 到 git 并推送到你的分支（如果已配置）。如果有广泛用途，考虑通过 PR 回馈。
+3. **提交** 到 git 并推送到你的分支（如果已配置）。有广泛用途时 → 通过 PR 回馈。
 
----
+## 自带校验脚本
+
+`scripts/` 下三个 Node 脚本（`.mjs`，无外部依赖），用于创建与改写技能后的机械层把关。它们与 `skill-creator` 工具链**无关**，可直接运行：
+
+| 脚本 | 用途 | 用法 |
+|---|---|---|
+| `scripts/validate-skill.mjs` | frontmatter、H1 唯一性、行尾、BOM、Emoji、围栏配平、大代码块、骨架锚点、语言红线 | `node scripts/validate-skill.mjs [--baseline <快照目录>]` |
+| `scripts/check-references.mjs` | 引用完整性：SKILL.md 指向的文件是否真实存在 | `node scripts/check-references.mjs [--baseline <快照目录>]` |
+| `scripts/diff-preservation.mjs` | 内容保全：改写后有哪些必须保留要素消失或减少 | `node scripts/diff-preservation.mjs --baseline <快照目录>` |
+
+默认技能根为 `~/.claude/skills`，用 `--skills` 覆盖。`--baseline` 传改写前的快照目录，前两个脚本即能把「改写前即断」与「本次新断」分开标注。退出码：`validate-skill` 与 `check-references` 有问题时返回 1，可当关卡；`diff-preservation` 恒返回 0，结果需人工裁决。
+
+三个脚本都是复核辅助，不是硬门禁 —— 外部绝对路径、占位符、定向删除失效引用都会产生需人工判读的条目。语言红线与骨架要求以 `references/skill-voice-contract.md` 为准。
 
 ## 反模式
 
@@ -479,8 +482,6 @@ description: 当测试存在竞态条件、时间依赖或通过/失败不一致
 | 流程图中包含代码 | 无法复制粘贴，难以阅读 |
 | 通用标签（step1、helper2） | 标签应具有语义含义 |
 | 不逐个测试就批量处理多个技能 | 与部署未经测试的代码一样 |
-
----
 
 ## 快速参考清单
 
@@ -513,8 +514,6 @@ description: 当测试存在竞态条件、时间依赖或通过/失败不一致
 - [ ] 主动提供描述优化
 - [ ] 打包技能（`.skill` 文件）
 - [ ] 提交到 git
-
----
 
 ## 发现工作流
 

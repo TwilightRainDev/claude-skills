@@ -4,6 +4,8 @@ description: "Send to Figma\nExport as an editable Figma design"
 ---
 # Send to Figma
 
+> **[本机不可用]** 本机**没有安装 Figma MCP**，因此 `generate_figma_design` 不存在，**无本地替代**。这不是"未连接"而是"未安装" —— 只提示用户去连接是解决不了的。见 [`../references/claude.md`](../references/claude.md) → "Web tools with no drop-in equivalent"。
+
 Export the current design to Figma using the Figma MCP. (This is the export direction — to **import** a local `.fig` file, see [import-from-figma.md](import-from-figma.md).)
 
 This only works with static designs; if you have a deck or prototype, you will need to duplicate the file and reformat it as a horizontal scroll of fixed-size frames for each slide or screen.

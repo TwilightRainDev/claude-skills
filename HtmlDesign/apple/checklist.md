@@ -29,6 +29,8 @@
 - [ ] `prefers-reduced-motion: reduce` 有**更温和的变体**（去掉位移、保留透明度/颜色），**不是** `0.01ms !important` 一刀切
 - [ ] `:hover` 运动被 `@media (hover: hover) and (pointer: fine)` 门控
 - [ ] 文字对比度：正文 4.5:1，大字 3:1
+- [ ] **`platform` 浅色模式：正文级文字用了 `-aa` 变体**（Apple 系统色原值作正文只有 3.26–4.02，不达 AA）；图标/分隔线/大字/填充可用原色。判据见 `platform-mode.md` 的「对比度双轨」
+- [ ] 浮层（Sheet / Alert / 模态）**有焦点陷阱** —— 打开移入焦点、关闭归还、`Tab` 不逃逸到背后的页面。起步包未做 trap，真实项目必补
 - [ ] 语义化标签（`<button>` / `<nav aria-label>` / `<main>`）与 `aria-*` 完整
 - [ ] 键盘可达，`:focus-visible` 有可见样式
 - [ ] `platform` 模式触控目标 ≥ 44×44pt

@@ -8,9 +8,9 @@
 :root {
   /* ==================== 字体 ==================== */
   --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
-                 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
-  --font-rounded: -apple-system-rounded, 'SF Pro Rounded', 'Helvetica Neue Rounded', var(--font-system);
+                 'Helvetica Neue', Arial, sans-serif; /* @kind font */
+  --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace; /* @kind font */
+  --font-rounded: -apple-system-rounded, 'SF Pro Rounded', 'Helvetica Neue Rounded', var(--font-system); /* @kind font */
 
   /* ==================== 字号阶（iOS） ==================== */
   --text-caption2: 11px;
@@ -32,27 +32,27 @@
   --text-display-xl: 96px;
 
   /* ==================== 字重 ==================== */
-  --fw-ultralight: 100;
-  --fw-thin: 200;
-  --fw-light: 300;
-  --fw-regular: 400;
-  --fw-medium: 500;
-  --fw-semibold: 600;
-  --fw-bold: 700;
-  --fw-heavy: 800;
-  --fw-black: 900;
+  --fw-ultralight: 100; /* @kind font */
+  --fw-thin: 200; /* @kind font */
+  --fw-light: 300; /* @kind font */
+  --fw-regular: 400; /* @kind font */
+  --fw-medium: 500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold: 700; /* @kind font */
+  --fw-heavy: 800; /* @kind font */
+  --fw-black: 900; /* @kind font */
 
   /* ==================== 行高 ==================== */
-  --lh-tight: 1.1;
-  --lh-snug: 1.2;
-  --lh-normal: 1.4;
-  --lh-relaxed: 1.5;
-  --lh-loose: 1.75;
+  --lh-tight: 1.1; /* @kind font */
+  --lh-snug: 1.2; /* @kind font */
+  --lh-normal: 1.4; /* @kind font */
+  --lh-relaxed: 1.5; /* @kind font */
+  --lh-loose: 1.75; /* @kind font */
 
   /* ==================== 字距 ==================== */
   --tracking-tighter: -0.03em;
   --tracking-tight: -0.02em;
-  --tracking-normal: 0;
+  --tracking-normal: 0; /* @kind font */
   --tracking-wide: 0.02em;
   --tracking-wider: 0.04em;
 
@@ -77,6 +77,24 @@
   --system-gray4: #D1D1D6;
   --system-gray5: #E5E5EA;
   --system-gray6: #F2F2F7;
+
+  /* ==================== AA 达标变体（仅浅色模式需要） ====================
+     Apple 的系统色是按设备语境调的，浅色下作正文用达不到 WCAG AA 4.5:1
+     （实测 #007AFF 4.02 / --system-gray 3.26 / --label-secondary 3.44）。
+     这是 Apple 原色固有的，不是实现缺陷。
+
+     双轨策略：原色保留为默认，另给一组向黑缩放、保持色相的达标变体。
+     用法规则见 apple/platform-mode.md「对比度双轨」一节 ——
+       * 正文级文字   -> 用 -aa 变体
+       * 图标/分隔线/大字 -> 原色即可（非文本只要 3:1）
+     深色模式实测已全部通过（5.76–6.44），故不提供深色 AA 变体。
+     全部数值由 WCAG 相对亮度公式解出并逐个复核，非估值。 */
+  --system-blue-aa: #0072EF;     /* 4.51  —— 只比原色暗 6.4%，视觉偏差极小 */
+  --system-red-aa: #DF342A;      /* 4.51 */
+  --system-green-aa: #24883D;    /* 4.51  —— 变化较大，仅用于文字，勿用于填充 */
+  --system-orange-aa: #AD6500;   /* 4.51  —— 同上 */
+  --system-gray-aa: #76767A;     /* 4.50 */
+  --label-secondary-aa: rgba(60, 60, 67, 0.705);   /* 4.55 */
 
   /* 文字四级（浅色） */
   --label-primary: #000000;
@@ -103,7 +121,7 @@
   --separator-opaque: #C6C6C8;
 
   /* ==================== 间距 —— 8pt 网格 ==================== */
-  --space-0: 0;
+  --space-0: 0; /* @kind spacing */
   --space-px: 1px;
   --space-0-5: 2px;
   --space-1: 4px;
@@ -130,7 +148,7 @@
 
   /* ==================== 圆角 —— 同心规则 ====================
      内圆角 + 内边距 = 外圆角。嵌套不满足此等式会"不圆"。 */
-  --radius-none: 0;
+  --radius-none: 0; /* @kind radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -148,7 +166,7 @@
   --radius-list-grouped: 10px;
 
   /* ==================== 阴影 ==================== */
-  --shadow-none: none;
+  --shadow-none: none; /* @kind shadow */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.06);
@@ -160,7 +178,7 @@
   --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 
   /* ==================== 模糊 ==================== */
-  --blur-none: 0;
+  --blur-none: 0; /* @kind other */
   --blur-sm: 4px;
   --blur-md: 8px;
   --blur-lg: 16px;
@@ -183,16 +201,16 @@
   --breakpoint-large: 1024px;
   --breakpoint-xl: 1280px;
 
-  --z-base: 0;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-modal-backdrop: 400;
-  --z-modal: 500;
-  --z-popover: 600;
-  --z-tooltip: 700;
-  --z-toast: 800;
-  --z-max: 9999;
+  --z-base: 0; /* @kind other */
+  --z-dropdown: 100; /* @kind other */
+  --z-sticky: 200; /* @kind other */
+  --z-fixed: 300; /* @kind other */
+  --z-modal-backdrop: 400; /* @kind other */
+  --z-modal: 500; /* @kind other */
+  --z-popover: 600; /* @kind other */
+  --z-tooltip: 700; /* @kind other */
+  --z-toast: 800; /* @kind other */
+  --z-max: 9999; /* @kind other */
 
   /* ==================== 触控目标 ==================== */
   --touch-target-min: 44px;          /* iOS 最小值 */
@@ -209,15 +227,15 @@
 
   /* ==================== 动效（权威源 apple/motion.md） ====================
      注意：本 mode 的原始素材提供过 --ease-in 与贝塞尔伪弹簧，二者均禁用。 */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* @kind easing */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* @kind easing */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* @kind easing */
 
-  --duration-instant: 100ms;   /* 微交互 / 按压 */
-  --duration-fast: 150ms;
-  --duration-normal: 200ms;    /* 标准过渡 */
-  --duration-slow: 300ms;      /* 上限，复杂动画 */
-  --duration-drawer: 500ms;
+  --duration-instant: 100ms;    /* @kind duration *//* 微交互 / 按压 */
+  --duration-fast: 150ms; /* @kind duration */
+  --duration-normal: 200ms;     /* @kind duration *//* 标准过渡 */
+  --duration-slow: 300ms;       /* @kind duration *//* 上限，复杂动画 */
+  --duration-drawer: 500ms; /* @kind duration */
 }
 
 /* ==================== 深色模式 ==================== */

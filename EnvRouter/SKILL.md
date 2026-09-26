@@ -3,15 +3,15 @@ name: EnvRouter
 description: Windows 环境事实快查表与路由。遇到环境敏感任务或症状时使用。先查表取证（1 秒），再按事实路由到对应技能执行。
 ---
 
-# 环境路由（Environment Router）
+# EnvRouter（环境路由）
 
-你是本机 Windows 环境事实的快查表与路由器。**模型会现场取证，但每次 72 秒；本机已知事实已实测固化，先查表。** 查表后仍不确定时再实测兜底，环境会变，旧记忆可能过时。
+本机 Windows 环境事实的快查表与路由器。**现场取证每次 72 秒；本机已知事实已实测固化，先查表。** 查表后仍不确定时再实测兜底 —— 环境会变，旧记忆可能过时。
 
 ## 使用流程
 
 1. **查本机事实表**（下表）→ 命中症状即得事实
 2. **按路由表** → 需要深处理时 Skill() 加载对应技能
-3. **查表未命中 / 事实存疑** → 跑最小实测命令（见"实测兜底"）确认后更新结论
+3. **查表未命中 / 事实存疑** → 跑最小实测命令（见“实测兜底”）确认后更新结论
 
 ## 本机已知环境事实（2026-08-09 实测版）
 
@@ -34,9 +34,9 @@ description: Windows 环境事实快查表与路由。遇到环境敏感任务�
 | 路径约定 | Obsidian 仓库 `<OBSIDIAN_VAULT>`（Git Bash 格式）；**勿用** `/mnt/`（WSL 格式） | 静态 |
 
 **证书报错分诊**（按报错原文）：
-- "unable to get local issuer certificate" / "self-signed certificate" → 客户端走 OpenSSL 而非 schannel（WSL/MSYS2 git/IDE 内置 git/其他 git 安装）——补信任 <LOCAL_PROXY> CA 或 `git config http.sslbackend schannel`
-- "certificate has expired" → 根存储有过期旧 CA；重启/更新 <LOCAL_PROXY> 用新证书链，**勿删证书**
-- "connection refused" → hosts 劫持条目在但 <LOCAL_PROXY> 没跑（用户可能忘记开），非证书问题
+- “unable to get local issuer certificate” / “self-signed certificate” → 客户端走 OpenSSL 而非 schannel（WSL/MSYS2 git/IDE 内置 git/其他 git 安装）——补信任 <LOCAL_PROXY> CA 或 `git config http.sslbackend schannel`
+- “certificate has expired” → 根存储有过期旧 CA；重启/更新 <LOCAL_PROXY> 用新证书链，**勿删证书**
+- “connection refused” → hosts 劫持条目在但 <LOCAL_PROXY> 没跑（用户可能忘记开），非证书问题
 
 ## 路由表（症状 → 处理）
 
@@ -63,16 +63,16 @@ git ls-remote https://github.com/<owner>/<repo>.git HEAD # 当前<LOCAL_PROXY>�
 date                                                     # 系统时间（动态）
 ```
 
-## Rationalization 红牌（发现自己在想这些 等于 先查表）
+## 合理化红牌
 
 | 想法 | 现实 |
 |---|---|
-| "直接跑一下试试" | 跑之前先查表：哪个解释器会被命中？什么编码？ |
-| "报证书错误就是被攻击/要修证书" | <LOCAL_PROXY> 是用户自装代理（开关由用户决定、可能忘开）。先实测当前状态与 schannel，勿动系统证书。 |
-| "我记得 python 指向 MSYS2" | 查表，存疑就实测。 |
-| "用 /mnt/d/ 格式" | WSL 格式。本机是 Git Bash，用 `D:/`。 |
-| "环境问题太常见，每次都现场查" | 快查表 1 秒，现场取证 72 秒。先查表。 |
-| "这不重要，先做事" | 环境判断错了，后面的活全白干。 |
+| “直接跑一下试试” | 跑之前先查表：哪个解释器会被命中？什么编码？ |
+| “报证书错误就是被攻击/要修证书” | <LOCAL_PROXY> 是用户自装代理（开关由用户决定、可能忘开）。先实测当前状态与 schannel，勿动系统证书。 |
+| “我记得 python 指向 MSYS2” | 查表，存疑就实测。 |
+| “用 /mnt/d/ 格式” | WSL 格式。本机是 Git Bash，用 `D:/`。 |
+| “环境问题太常见，每次都现场查” | 快查表 1 秒，现场取证 72 秒。先查表。 |
+| “这不重要，先做事” | 环境判断错了，后面的活全白干。 |
 
 ## 红线
 
@@ -80,4 +80,4 @@ date                                                     # 系统时间（动态
 - **不把证书错误当安全事件**：<LOCAL_PROXY> 是用户自装的已知常态；其开关状态模糊，任何快查表/记忆不得断言，任务前实测。
 - **探测不改状态**：兜底命令只读；改环境先说明。
 - **路由不等于建议**：判定后立即 Skill() 加载执行。
-- **用户指令优先**：用户明确"直接做"时跳过查表。
+- **用户指令优先**：用户明确“直接做”时跳过查表。

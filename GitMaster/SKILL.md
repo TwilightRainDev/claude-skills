@@ -3,26 +3,30 @@ name: GitMaster
 description: 完整的 Git 专家知识体系，覆盖所有 Git 操作。
 ---
 
-# Git 精通 —— 完整的 Git 专业知识
+# GitMaster（Git 精通）
 
-涵盖从基础到高级的全面 Git 技能，针对破坏性命令设有强制安全护栏，并提供平台特定的工作流。
+覆盖从基础到高级的完整 Git 操作，对破坏性命令设强制安全护栏，并提供平台特定工作流。
 
-## 关键准则
+## 何时使用
 
-### Windows 文件路径要求
+任何 Git 命令或操作均可激活：
 
-在 Windows 上使用 Git Bash 会话中的 Edit 或 Write 工具时，文件路径中请使用正斜杠（`/`），而不是反斜杠（`\`）：
+- 仓库初始化、克隆、配置
+- 分支管理和策略
+- 提交工作流及最佳实践
+- 合并策略和冲突解决
+- Rebase 操作（交互式和非交互式）
+- 历史重写（filter-repo、reset、revert）
+- 恢复操作（reflog、fsck）
+- 危险操作（force push、hard reset）
+- 平台特定工作流（GitHub、Azure DevOps、Bitbucket、GitLab）
+- 高级功能（子模块、worktree、钩子）
+- 性能优化、大文件（LFS）
+- 跨平台兼容性（Windows/Linux/macOS）
 
-- 正确：`D:/repos/project/file.tsx`
-- 错误：`D:\repos\project\file.tsx`
+**关键触发词：** 用户提到 Git、GitHub、GitLab、Bitbucket、Azure DevOps、版本控制、commit/push/pull/merge/rebase、分支管理、历史修改或恢复场景。
 
-适用于：Edit/Write 的 `file_path` 参数及所有文件操作。
-
-### 文档编写准则
-
-除非用户明确要求，或者已有 `docs` 文件夹，否则绝不创建新的文档文件。优先更新现有的 README.md 文件。保持文档简洁、直接、专业。
-
-## 简而言之：安全第一
+## 安全第一
 
 在执行任何破坏性操作之前：
 
@@ -46,25 +50,6 @@ git reflog
 3. 仅提供指导（不自动执行任何操作）”
 
 在整个会话中尊重此选择。
-
-## 何时使用此技能
-
-针对任何 Git 命令或操作均可激活，包括：
-
-- 仓库初始化、克隆、配置
-- 分支管理和策略
-- 提交工作流及最佳实践
-- 合并策略和冲突解决
-- Rebase 操作（交互式和非交互式）
-- 历史重写（filter-repo、reset、revert）
-- 恢复操作（reflog、fsck）
-- 危险操作（force push、hard reset）
-- 平台特定工作流（GitHub、Azure DevOps、Bitbucket、GitLab）
-- 高级功能（子模块、worktree、钩子）
-- 性能优化、大文件（LFS）
-- 跨平台兼容性（Windows/Linux/macOS）
-
-**关键触发词：** 用户提到 Git、GitHub、GitLab、Bitbucket、Azure DevOps、版本控制、commit/push/pull/merge/rebase、分支管理、历史修改或恢复场景。
 
 ## 核心原则
 
@@ -94,9 +79,24 @@ Git 的行为在不同平台和托管服务商上有所不同：
 
 详见 `references/platform-workflows.md` 中的托管平台特定命令，以及 `references/cross-platform.md` 中的 Windows/Linux/macOS 处理方式。
 
+## 关键准则
+
+### Windows 文件路径要求
+
+在 Windows 的 Git Bash 会话中使用 Edit 或 Write 工具时，文件路径用正斜杠（`/`），不用反斜杠（`\`）：
+
+- 正确：`D:/repos/project/file.tsx`
+- 错误：`D:\repos\project\file.tsx`
+
+适用于：Edit/Write 的 `file_path` 参数及所有文件操作。
+
+### 文档编写准则
+
+除非用户明确要求，或者已有 `docs` 文件夹，否则绝不创建新的文档文件。优先更新现有的 README.md 文件。保持文档简洁、直接、专业。
+
 ## 参考文件索引
 
-本 SKILL.md 作为精简编排器。详细的命令目录和操作流程位于 `references/` 中：
+本 SKILL.md 作为精简编排器。详细的命令目录和操作流程位于 `references/` 中；在执行某一类命令前，加载对应的参考文件。
 
 | 参考文件 | 内容 |
 |-----------|------|
@@ -127,8 +127,6 @@ Git 的行为在不同平台和托管服务商上有所不同：
 
 ## 成功标准
 
-使用此技能的 Git 工作流应做到：
-
 1. 始终在任务开始时询问用户偏好（自动提交 vs 手动）
 2. 在破坏性操作前始终警告
 3. 在危险操作前始终创建备份分支
@@ -139,7 +137,3 @@ Git 的行为在不同平台和托管服务商上有所不同：
 8. 绝不提交密钥或大型二进制文件
 9. 提交前测试代码
 10. 知道如何从任何错误中恢复
-
-## 结语
-
-结合参考文件和安全护栏，本技能提供安全、高效处理任何 Git 操作所需的知识。在执行某一类命令前，请务必加载对应的参考文件。

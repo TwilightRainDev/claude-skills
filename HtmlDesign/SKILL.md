@@ -1,6 +1,6 @@
 ---
 name: HtmlDesign
-description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com 视觉）、仿 iOS/macOS 应用界面（HIG）双模，含原型、幻灯片、设计系统与 PPTX/PDF/视频导出
+description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com 视觉）、仿 iOS/macOS 应用界面（HIG）双模，含原型、幻灯片、设计系统与打印/PDF 交付
 ---
 
 # HtmlDesign
@@ -14,7 +14,8 @@ description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com �
 - 用户要 Apple 风格 / iOS / macOS 风格的界面、原型、mockup、"做个页面看看"
 - 用户要幻灯片/演示文稿（HTML deck），或要能直接打印的文档
 - 用户要建设计系统、UI kit，或要在项目里接入一套已有设计系统
-- 用户要把设计导出为 PPTX / PDF / 视频，或交接给 Figma / Canva / 开发者
+- 用户要把设计交付为可打印的 PDF，或交接给开发者
+  > **PPTX 与视频导出当前不可用**（缺构建产物与运行时依赖，见文末「当前不完整的部分」）；用户提出这两项时先说明现状，不要假装调用。
 
 不适用：生产级前端工程（走常规开发流程）、纯位图生成、非 Apple 品牌风格。
 
@@ -42,7 +43,14 @@ description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com �
 | 5 | `apple/checklist.md` | 交付前逐条核对 |
 | 6 | `apple/ds-integration.md` | **按需**。仅当要把 token 当设计系统数据源去编译时读；日常直接 `<link>` 引入 token 文件不涉及 |
 
-起步组件：`starter-components/apple-platform-starter.html`（iOS/macOS 控件包）。`web` 模式的起步页面见 `starter-components/apple-web-starter.html`。
+**起步组件**（两个起步包里每个组件都带标记，按名找、按块拷）：
+
+| 文件 | mode | 内容 |
+|---|---|---|
+| `starter-components/apple-web-starter.html` | web | 整页瓦片节奏 + 导航/按钮/卡片/配置器/搜索/页脚 |
+| `starter-components/apple-platform-starter.html` | platform | iOS/macOS 控件包：导航栏/分组列表/开关行/按钮/输入/分段控件/搜索/标签栏/Sheet/Alert/卡片 |
+
+标记约定：`<!-- [COMPONENT: slug] -->` 标单个组件；`[COMPONENT-FAMILY: slug]` 标一族变体（如 `button`、`product-tile`）。用 `grep -o '\[COMPONENT[^]]*\]'` 可列全。两个包都通过 `<link>` 引入对应的 `apple/*-tokens.css`，**cp 进项目时先改这处相对路径**。
 
 `apple/` 下的内容为本技能自带，**不依赖任何外部仓库或临时目录**。
 
@@ -55,6 +63,8 @@ description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com �
 | Claude Code | `references/claude.md` |
 | Codex | `references/codex.md` |
 | Cursor | `references/cursor.md` |
+
+另有一份**与宿主无关**的 `references/content-craft.md`（**按需**）：上游英文主提示词里仍适用的内容纪律、尺度、flex/grid 间距纪律与 **CJK 排版**。做中文界面、幻灯片或文档时值得一读。与 `apple/` 冲突时一律以 `apple/` 为准。
 
 ## 核心流程
 
@@ -100,19 +110,22 @@ description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com �
 > `frontend-design` 已改写为本技能的美学定调入口 —— 它不再主张自由发明方向，而是在 Apple 两套语言内部**选定性格并落实到细节**，并负责反"通用 Apple 仿制品"。需要非 Apple 品牌风格请另走别的技能。
 
 **制品形态**
-`make-a-deck`（幻灯片，静态 HTML 优先，保证文本可直接编辑）、`make-a-doc`（文档，开箱可打印）、`speaker-notes`（演讲者脚本）、`save-as-standalone-html`（单文件离线可用）、`save-as-pdf`、`read-pdf`。
+`make-a-deck`（幻灯片，静态 HTML 优先，保证文本可直接编辑）、`make-a-doc`（文档，开箱可打印）、`speaker-notes`（演讲者脚本）、`save-as-standalone-html`（单文件离线可用）、`save-as-pdf`。
 
 **交互与动效**
-`make-tweakable`（加入设计内调参控件）、`tweaks-protocol`（Tweaks 宿主协议 postMessage + 持久化）、`low-level-tweaks-api`（面板自由文本回传）、`animated-video`（时间线动效）、`sound-effects`、`generate-images`、`claude-api-in-prototypes`（在制品里调 Claude）。
+`make-tweakable`（加入设计内调参控件）、`tweaks-protocol`（Tweaks 宿主协议 postMessage + 持久化）、`low-level-tweaks-api`（面板自由文本回传）、`animated-video`（时间线动效）、`generate-images`（需本机有图像后端，否则按该文档第 4 步告知用户，不要静默兜底）。
 
 **设计系统**
 `design-system-authoring-guide`（从建/导入到编译成 bundle 的全流程，主入口）、`create-design-system`、`design-components`、`design-system-preview`（编译成单个自包含预览页）、`use-design-system`（在项目里消费已有系统，导入到 `_ds/<slug>/` 并记录绑定）。
 
 **导入**
-`import-from-figma`（离线解 .fig）、`import-from-html`（读代码不读截图）、`import-from-github`（按需稀疏导入并记来源）。
+`import-from-html`（读代码不读截图）、`import-from-github`（按需稀疏导入并记来源）。
+> `import-from-figma`（离线解 .fig）**当前不可用** —— 入口脚本 `agents/import-figma.mjs` 已恢复，但解码器 `agents/vendor/fig-materialize.mjs` 已决定不恢复（来源不可归属），调用必然报 `ERR_MODULE_NOT_FOUND`。
 
 **导出与交接**
-`export-as-pptx-editable`（可编辑，默认）、`export-as-pptx-screenshots`（像素级不可编辑）、`export-as-video`、`handoff-to-claude-code`（开发者交接包）、`send-to-figma`、`send-to-canva`。
+`export-as-pptx-editable`（可编辑，默认）、`export-as-pptx-screenshots`（像素级不可编辑）、`export-as-video`、`handoff-to-claude-code`（开发者交接包）。
+
+> `export-as-pptx-*` 与 `export-as-video` 当前**不可用**（缺构建产物与依赖，见文末「当前不完整的部分」）。`send-to-figma`、`send-to-canva` 依赖 claude.ai 网络产品专有工具，在 Claude Code 下不成立，已从本索引移除。
 
 ## 常见错误
 
@@ -128,12 +141,35 @@ description: 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com �
 
 ## 当前不完整的部分
 
-本技能的文件在 2026-09-25 的一次还原事故中丢失部分，以下是各文档引用但**当前不存在**的文件：
+本技能的文件在 2026-09-25 的一次还原事故中丢失部分。**2026-09-26 已从事故外的祖先快照恢复设计系统管线**（编译/检查/导入/预览）、Figma 导入入口脚本、资产登记，以及三份子代理提示词。以下是**当前仍不存在**的文件：
 
-- `system-prompt.md`（主提示词本体）、`package.json`、`tsconfig.json`
-- `agents/` 顶层脚本：`compile-design-system.mjs`、`check-design-system.mjs`、`import-design-system.mjs`
-- `agents/` 子代理提示词：`fork-verifier-agent.md`、`vision-probe-agent.md`、`design-system-checker.md`
-- `agents/vendor/babel.min.js`（浏览器内 JSX 转换，运行时依赖）
-- `agents/gen-pptx/dist/cli.mjs`、`agents/gen-video/` 全部源码
+- `agents/vendor/fig-materialize.mjs`（319 KB，`.fig` 离线解码器）—— **已决定不恢复**（理由：来源不可归属 —— 无版本号、无许可头、无上游 URL，无法核验；其内嵌 54 KB WASM 的能力面经枚举确认无法 I/O，但来源不可归属本身已足以否决）。`agents/import-figma.mjs` 已恢复，但因此**当前必然报 `ERR_MODULE_NOT_FOUND`**。该悬空引用**有意保留**，以保住将来恢复的路径
+- `agents/gen-pptx/` 的 21 个源文件（`src/cli.ts`、`src/index.ts`、`src/types.ts`、`src/render/**`、`src/browser/{capture-editable,capture-screenshot,dom-style,entry,gradient}.ts`、`package.json`、`tsconfig.json`、`package-lock.json` 等）及其两个构建产物 `dist/cli.mjs`、`dist/capture.iife.js`
+- `agents/gen-video/` 的全部 14 个源文件及其 `dist/cli.mjs`
+- `system-prompt.md`（上游英文主提示词，40,979 B）—— **有意不恢复**；其中仍适用于本技能的内容已摘入 `references/content-craft.md`
 
-影响：**设计系统的编译/检查/导入、PPTX 与视频导出、子代理验证**这几条链路当前不可用；`built-in-skills/` 下 33 个子技能文档、`starter-components/` 下 10 个起步组件、`agents/lib/{asset-store,ds-core,ds-prompt}.mjs` 与 `agents/gen-pptx/src/` 源码完好，制品设计与制作仍可进行。依赖上述缺失文件时，先告知用户该能力当前缺失，不要假装调用。
+**影响**：**PPTX 导出**与**视频导出**两条链路不可用。二者都需要 `npm install` + `npx playwright install chromium`（约 150 MB）并构建，视频另需系统 `ffmpeg`；且文档给的安装命令会把 `node_modules` 装进技能目录，违反本机"大依赖装 D 盘"的约定，故本次未执行。**Figma 导入**因缺解码器不可用。
+
+**以下能力已恢复且可用**：设计系统的编译 / 检查 / 导入 / 预览（`preview.html`）、资产登记（`_d_meta.json`）、视觉探针与子代理校验。
+
+`[NOTE]` 本机 Claude Code 环境下**另有 6 项能力本来就不成立**（依赖 claude.ai 网络产品专有工具，与本次事故无关）：
+
+| 子技能 | 依赖的未映射工具 | 处置 |
+|---|---|---|
+| `send-to-figma` | `generate_figma_design`（Figma MCP） | 已从索引移除，**本宿主不要调用** |
+| `send-to-canva` | `super_inline_html`、`get_public_file_url`、`present_fs_item_for_download`、`canva__*` | 同上 |
+| `sound-effects` | `generate_sound`（ElevenLabs） | 同上 |
+| `claude-api-in-prototypes` | `window.claude.complete` | 同上 |
+| `read-pdf` | `readFileBinary`、`log` | 同上 |
+| `read-pdf` | `readFileBinary`、`log` | 需按替换表改写成 Node 版；文档里的片段是浏览器沙箱形态 |
+| `save-as-pdf` | `open_for_print`（仅末步） | **已有本地替代且已实跑验证**，见下 |
+
+`references/claude.md` 的「Web tool → Claude Code tool map」本应给出这些工具在本宿主的替代。**这 10 个现已全部补入该表**，逐个标注处置：`open_for_print` 与 `readFileBinary` 给了可照做的本地替代，其余标注**本机无替代**并写明**缺的是哪个后端**。详见该文档的「Web tools with no drop-in equivalent」与「Exporting to PDF (print)」两节。
+
+`save-as-pdf` 的本地替代（**已实跑验证** —— 起 `designs` 服务器、取回 `-print.html` 及其相对 CSS/图片，均 HTTP 200 且内容与源逐字节一致）：
+它的产物是 `-print.html`（打印就绪 HTML），**生成本身不依赖任何缺失件**；末步改为：**复用同一个 `designs` HTTP 服务器**把 `-print.html` 伺服出来，把 `http://localhost:<port>/<project>/<file>-print.html` 交给用户自行在浏览器里打印为 PDF。
+**不要**用 `SendUserFile` 单独发这个文件 —— 它的相对资源路径只在该服务器下才解析得对。用户侧"另存为 PDF"那一步是 agent 无法代劳也无法验证的，如实告知即可。
+
+这 6 份子技能文档仍留在 `built-in-skills/` 下，供 Codex / Cursor 等宿主按需参考。
+
+依赖上述缺失文件时，先告知用户该能力当前缺失，不要假装调用。

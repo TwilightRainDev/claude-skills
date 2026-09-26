@@ -36,11 +36,11 @@
   --hairline: #e0e0e0;
 
   /* ---------- 字体 ---------- */
-  --font-display: "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-text: "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, sans-serif; /* @kind font */
+  --font-text: "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, sans-serif; /* @kind font */
   /* 非 Apple 平台替代：引入 Inter 后把上面两行换成 Inter */
-  --font-display-alt: "Inter", system-ui, sans-serif;
-  --font-text-alt: "Inter", system-ui, sans-serif;
+  --font-display-alt: "Inter", system-ui, sans-serif; /* @kind font */
+  --font-text-alt: "Inter", system-ui, sans-serif; /* @kind font */
 
   /* ---------- 字号阶 ---------- */
   --text-hero-display: 56px;
@@ -59,22 +59,22 @@
   --text-micro-legal: 10px;
 
   /* ---------- 行高 ---------- */
-  --lh-hero-display: 1.07;
-  --lh-display-lg: 1.1;
-  --lh-display-md: 1.47;
-  --lh-lead: 1.14;
-  --lh-lead-airy: 1.5;
-  --lh-tagline: 1.19;
-  --lh-body: 1.47;
-  --lh-body-strong: 1.24;
-  --lh-caption: 1.43;
-  --lh-caption-strong: 1.29;
-  --lh-dense-link: 2.41;   /* 页脚密集链接列，反常地松，是特性不是 bug */
-  --lh-fine-print: 1.0;
+  --lh-hero-display: 1.07; /* @kind font */
+  --lh-display-lg: 1.1; /* @kind font */
+  --lh-display-md: 1.47; /* @kind font */
+  --lh-lead: 1.14; /* @kind font */
+  --lh-lead-airy: 1.5; /* @kind font */
+  --lh-tagline: 1.19; /* @kind font */
+  --lh-body: 1.47; /* @kind font */
+  --lh-body-strong: 1.24; /* @kind font */
+  --lh-caption: 1.43; /* @kind font */
+  --lh-caption-strong: 1.29; /* @kind font */
+  --lh-dense-link: 2.41;    /* @kind font *//* 页脚密集链接列，反常地松，是特性不是 bug */
+  --lh-fine-print: 1.0; /* @kind font */
 
   /* ---------- 字距（尺寸专属，绝不用一个值通吃） ---------- */
   --ls-hero-display: -0.28px;
-  --ls-display-lg: 0;
+  --ls-display-lg: 0; /* @kind font */
   --ls-display-md: -0.374px;
   --ls-lead: 0.196px;
   --ls-tagline: 0.231px;
@@ -84,10 +84,10 @@
   --ls-micro-legal: -0.08px;
 
   /* ---------- 字重（阶梯 300/400/600/700，500 被刻意剔除） ---------- */
-  --fw-light: 300;
-  --fw-regular: 400;
-  --fw-semibold: 600;
-  --fw-bold: 700;
+  --fw-light: 300; /* @kind font */
+  --fw-regular: 400; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold: 700; /* @kind font */
 
   /* ---------- 间距（8px 基准） ---------- */
   --space-xxs: 4px;
@@ -126,17 +126,17 @@
   --touch-target-min: 44px;
 
   /* ---------- 动效（权威源 apple/motion.md，禁用 ease-in） ---------- */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* @kind easing */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* @kind easing */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* @kind easing */
 
-  --duration-press: 160ms;
-  --duration-tooltip: 125ms;
-  --duration-popover: 200ms;
-  --duration-dropdown: 200ms;
-  --duration-modal: 250ms;
-  --duration-drawer: 500ms;
-  --duration-toast: 400ms;
+  --duration-press: 160ms; /* @kind duration */
+  --duration-tooltip: 125ms; /* @kind duration */
+  --duration-popover: 200ms; /* @kind duration */
+  --duration-dropdown: 200ms; /* @kind duration */
+  --duration-modal: 250ms; /* @kind duration */
+  --duration-drawer: 500ms; /* @kind duration */
+  --duration-toast: 400ms; /* @kind duration */
 }
 
 /* ---------- 断点（媒体查询里不能直接用变量，此处列出供参照） ----------

@@ -3,15 +3,13 @@ name: WinBashTest
 description: Win和 Git Bash 环境下的 Vitest、Playwright 及 MSW 测试兼容性指南。
 ---
 
-# Windows 和 Git Bash 测试兼容性
+# WinBashTest（Windows 和 Git Bash 测试兼容性）
 
-## 概述
-
-测试在 Windows 的 Git Bash/MINGW 下出现路径转换、Shell 检测、启动失败等问题时，先用本页的路由表定位症状与对策；需要完整可执行代码时再按指针读取对应 reference。本文件只做路由与决策引导，不内嵌大段代码。
+Windows 的 Git Bash/MINGW 下测试出现路径转换、Shell 检测、启动失败等问题时，先用下方路由表定位症状与对策；需要完整可执行代码时按指针读取对应 reference。本文件只做路由与决策引导，不内嵌大段代码。
 
 ## 何时使用
 
-- 测试报 "No such file or directory"、模块导入失败、Playwright 浏览器启动失败
+- 测试报 “No such file or directory”、模块导入失败、Playwright 浏览器启动失败
 - 覆盖率 / 截图 / 视频产物写到错误位置
 - 需要跨平台 CI 矩阵，或测试需要按 Shell 条件设置
 - MSW 在 Git Bash 下工作异常
@@ -21,14 +19,14 @@ description: Win和 Git Bash 环境下的 Vitest、Playwright 及 MSW 测试兼�
 | 症状 | 根因 | 对策 | 完整代码 |
 |------|------|------|---------|
 | 路径被改写（/foo → C:/Program Files/Git/usr/foo） | Git Bash 自动路径转换 | 相对路径首选；单条命令 `MSYS_NO_PATHCONV=1`；需绝对路径时 `cygpath` | references/path-conversion.md |
-| "No such file or directory"（C:UsersUsername...） | 路径转换 + 临时目录 | 同上；或改走 npm scripts | references/path-conversion.md |
+| “No such file or directory”（C:UsersUsername...） | 路径转换 + 临时目录 | 同上；或改走 npm scripts | references/path-conversion.md |
 | Cannot find module '../src/utils' | 分隔符混淆 | `path.join()` / `path.resolve()` 构建路径 | references/config-snippets.md |
 | Playwright 启动失败 | DISPLAY/BROWSER 变量干扰 | `unset DISPLAY` + `unset BROWSER` | 见下方错误速查 |
 | 覆盖率/产物写到 /c/... 失败 | 配置中绝对路径 | 输出目录与 include 一律相对路径 | references/config-snippets.md |
 | 需要按环境条件设置测试 | 不知道当前 Shell | 检测 `MSYSTEM` 环境变量（最可靠） | references/shell-detection.md |
 | CI 需要多平台验证 | 单平台测试漏掉平台问题 | GitHub Actions matrix 三平台跑 | references/ci-matrix.md |
 
-## 核心规则（思路引导）
+## 核心规则
 
 1. **用 npm scripts 执行测试**，不要直接调 vitest/playwright——Shell 行为一致性，npm 自动处理路径。
 2. **配置、导入、产物目录一律相对路径**，避免 `/c/` 或 `C:\` 开头的绝对路径。

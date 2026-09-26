@@ -84,6 +84,25 @@ yellow  #FFD60A
 
 **所有颜色必须通过 `prefers-color-scheme` 提供明暗两套。** 不要只写浅色。
 
+## 对比度双轨（浅色模式必读）
+
+**Apple 的系统色作正文用达不到 WCAG AA。** 实测（对白底）：`--system-blue` **4.02**、`--label-secondary` **3.44**、`--system-gray` **3.26**、`--system-green` **2.22**、`--system-orange` **2.20**。AA 正文要 4.5:1，它们只够 3:1 那一档（大字与非文本）。
+
+**这是 Apple 原色固有的** —— 这些颜色是按设备语境调的，HIG 并未承诺每个色都满足 WCAG。深色模式则全部通过（5.76–6.44），无需处理。
+
+**本技能采取双轨：原色保留为默认，另给一组达标变体**（`platform-tokens.css` 的 `*-aa` 系列，向黑缩放保持色相，数值由 WCAG 公式解出并逐个复核）：
+
+| 用途 | 用哪个 |
+|---|---|
+| **正文级文字**（段落、说明、按钮标签、链接） | **`-aa` 变体** |
+| 图标、分隔线、边框、大字标题 | 原色即可（非文本只要 3:1） |
+| 纯填充/色块（不作文字用） | 原色 |
+| 深色模式 | 一律原色 |
+
+**`--system-blue-aa: #0072EF` 只比原色暗 6.4%，视觉几乎无损**，正文与主按钮照用无妨。但 `--system-green-aa` / `--system-orange-aa` 变化明显（`#34C759` → `#24883D`），**只用于文字，不要拿它们做填充**，否则与 iOS 观感差得远。
+
+需要更忠于原色时，另一条路是**改用法规避**：正文一律走 `--label-primary`（对白 21:1），把 `--label-secondary` 严格限制在大字与装饰性文字上，并接受蓝底白字按钮那 4.02 的固有取舍。
+
 ## 间距 —— 8pt 网格
 
 `0` · `1px` · `2` · `4` · `6` · `8` · `10` · `12` · `14` · `16` · `20` · `24` · `28` · `32` · `36` · `40` · `44` · `48` · `56` · `64` · `80` · `96` · `112` · `128`
@@ -138,7 +157,9 @@ yellow  #FFD60A
 
 ### 输入框
 
-`min-height: 44px`，`--bg-secondary` 底，12px 圆角。焦点态 `box-shadow: 0 0 0 4px rgba(0,122,255,0.3)`。
+`min-height: 44px`，`--bg-secondary` 底，**`--radius-input`（8px）圆角**。焦点态 `box-shadow: 0 0 0 4px rgba(0,122,255,0.3)`。
+
+> 圆角取 8px 而非 12px：上游素材的正文写 12px、其 token 别名却是 `--radius-md`（8px），二者本就不一致。此处**以 token 为准** —— 凡 prose 与 token 冲突，一律 token 胜出，因为 token 是可被机器读取与校验的那一侧。
 
 ### 标签栏（Tab Bar）
 
@@ -155,6 +176,13 @@ padding-bottom: env(safe-area-inset-bottom);
 ### Sheet
 
 Detents：`large`(100%) 与 `medium`(50%)。含抓取条（36×5px，居中）。完成按钮右上，取消按钮左上。遮罩 `rgba(0,0,0,0.4)`。
+
+**实现要点（易错，实测踩到过）：**
+
+- **居中要用 `height: fit-content`。** 绝对定位 + `inset: 0` + `height: auto` 时，浏览器会把盒子拉伸填满包含块，`margin: auto` 根本没机会居中 —— 实测 2400px 视口下弹窗真被拉到 2400px 高。Alert 同理。
+- **autofocus 不能在 `requestAnimationFrame` 里直接调。** 那一刻元素还是 `visibility: hidden`，`focus()` 被静默忽略，`activeElement` 停在 `<body>`。先 `void panel.offsetHeight` 强制样式重算，再 `focus()`。
+- **焦点陷阱是必须补的。** 打开浮层要移入焦点、关闭要归还焦点，中间 `Tab` 不能跑到浮层背后的页面。起步包为简化未做 trap，**真实项目必须补**，否则键盘用户会迷失在背景内容里。
+- 测量打开态尺寸时注意 `scale()` 变换会污染 `getBoundingClientRect()` 读数 —— 实测出现过"42px 触控目标 / 259px 宽"的假象，改在无缩放态或除以缩放比复测。
 
 ### 警告框（Alert）
 

@@ -6,7 +6,7 @@ TwilightRainDev 的 Claude Code 技能（skill）聚合仓库，同时作为本�
 
 | 技能 | 说明 |
 |------|------|
-| [Ask](Ask/SKILL.md) | 技能路由加使用总则。任何会话与任务开始前先检查是否有适用技能，再行动。当不确定当前任务该用哪个已装技能、用户请求横跨多个领域、任务类型模糊、或用户提到"该用什么技能或流程或skill"时使用。判定出目标技能后必须直接用 Skill 工具加载执行，不建议用户手动输入斜杠命令。 |
+| [Ask](Ask/SKILL.md) | 任何会话与任务开始前先检查是否有适用技能，再行动。当不确定当前任务该用哪个已装技能、用户请求横跨多个领域、任务类型模糊、或用户提到“该用什么技能/流程/skill”时使用。判定出目标技能后必须直接用 Skill 工具加载执行，不要建议用户手动输入斜杠命令。 |
 | [ChangeClaudeConfig](ChangeClaudeConfig/SKILL.md) | 修改 Claude Code 配置：settings.json（钩子/权限/env/MCP/插件/模型）、keybindings、白名单优化。 |
 | [CreatePrompts](CreatePrompts/SKILL.md) | 为任何 AI 模型创建/编写/改进提示词：刨根问底（苏格拉底式澄清）→ 生成。 |
 | [Debugging](Debugging/SKILL.md) | 任何 bug、测试失败、性能回归、构建/集成问题，先分诊找根因，再动手修。 |
@@ -19,10 +19,10 @@ TwilightRainDev 的 Claude Code 技能（skill）聚合仓库，同时作为本�
 | [GitMaster](GitMaster/SKILL.md) | 完整的 Git 专家知识体系，覆盖所有 Git 操作。 |
 | [GlossaryAndAdr](GlossaryAndAdr/SKILL.md) | 构建并完善领域模型：确定领域术语、记录架构决策。 |
 | [HandleReview](HandleReview/SKILL.md) | 收到审查反馈后、实施前：技术严谨验证，拒绝表演性赞同或盲目实施。 |
-| [HtmlDesign](HtmlDesign/SKILL.md) | 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com 视觉）、仿 iOS/macOS 应用界面（HIG）双模，含原型、幻灯片、设计系统与 PPTX/PDF/视频导出。 |
+| [HtmlDesign](HtmlDesign/SKILL.md) | 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com 视觉）、仿 iOS/macOS 应用界面（HIG）双模，含原型、幻灯片、设计系统与打印/PDF 交付。 |
 | [HumanizerZh](HumanizerZh/SKILL.md) | 中文文本去 AI 味、改写得像人写，或做标点全半角归一化时使用。 |
 | [LongTaskPlaybook](LongTaskPlaybook/SKILL.md) | 处理 CLI/远程 API 长耗时任务，长任务不阻塞回合，先 ACK 再跟进。 |
-| [ManageSkills](ManageSkills/SKILL.md) | 创建、改进、评测、部署技能全周期；部署前验证技能。 |
+| [ManageSkills](ManageSkills/SKILL.md) | 当要创建技能、改进或评测现有技能、给技能改名、部署技能或部署前验证技能时使用。 |
 | [ObsidianVault](ObsidianVault/SKILL.md) | 在 Obsidian 仓库搜索、创建、管理笔记，支持 wikilink 与索引笔记。 |
 | [PersonaEcho](PersonaEcho/SKILL.md) | 把 colleague/relationship/celebrity 三类角色蒸馏成可复用技能。 |
 | [PolishCode](PolishCode/SKILL.md) | 提交前润色代码：复用、简化、效率、抽象层次，并行评审代理并应用修复。 |

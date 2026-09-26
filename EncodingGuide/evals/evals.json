@@ -1,0 +1,47 @@
+{
+  "skill_name": "EncodingGuide",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我写一个 PowerShell 脚本，扫描 I:\\game\\原神\\mods 目录下所有的 zh_CN.json 文件，把每个文件里的 version 字段改成 \"3.0.0\"，然后保存。注意路径有中文。",
+      "expected_output": "脚本应使用临时 .py 文件方案（Out-File + -LiteralPath + UTF8），Python 中 json.dump 需包含 ensure_ascii=False + indent=2 + encoding='utf-8'",
+      "files": [],
+      "expectations": [
+        "脚本使用 -LiteralPath（而非 -Path）来处理含中文或特殊字符的路径",
+        "Python 代码写入临时 .py 文件（Out-File + -Encoding UTF8），而非通过管道或 python -c 传递",
+        "Python 中 open() 明确指定 encoding='utf-8'",
+        "json.dump() 设置 ensure_ascii=False 以保留中文字符",
+        "json.dump() 设置 indent=2 以生成可读输出",
+        "脚本末尾添加 f.write('\\n') 以保持 git diff 友好",
+        "不使用 python -c 内联代码通过管道传递"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我的 PowerShell 脚本报错了：SyntaxError: invalid character (U+2014)。代码在描述中。帮我修一下。",
+      "expected_output": "诊断出两个问题：1) 注释中的 em dash (—) 被管道损坏 → 改用 ASCII 标点；2) 管道传代码给 python -c 的方式本身就是错误的 → 改用 Out-File 临时文件方案",
+      "files": [],
+      "expectations": [
+        "诊断出 em dash (— / U+2014) 是导致 SyntaxError 的原因",
+        "诊断出通过管道将 heredoc 传给 python -c 是根本问题",
+        "修复方案改用 Out-File 将代码写入临时 .py 文件而非管道传递",
+        "修复后的代码中注释和文档字符串只使用 ASCII 标点符号",
+        "修复方案包括 -LiteralPath 和 -Encoding UTF8 参数"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我在 Windows 上用 PowerShell，需要写一个脚本：把 I:\\code\\我的项目 下的所有 .json 文件里的 windows 路径分隔符 \\ 替换成 / （用于跨平台兼容）。目录名有中文，文件里也有中文字段。帮我写出来。",
+      "expected_output": "脚本应：1) 用 Get-ChildItem -LiteralPath 获取文件列表；2) 将 Python 逻辑写入临时 .py 文件；3) Python 中用 encoding='utf-8' 读写 JSON，ensure_ascii=False 保留中文；4) 路径替换在 Python 中做而非 PowerShell 正则",
+      "files": [],
+      "expectations": [
+        "使用 Get-ChildItem -LiteralPath（而非 -Path）扫描目录",
+        "Python 代码写入临时 .py 文件（Out-File + UTF8），不通过管道或 python -c 传递",
+        "路径分隔符替换在 Python 中执行（str.replace 或 re.sub），而非 PowerShell 的 -replace",
+        "Python 中 open() 明确指定 encoding='utf-8'",
+        "json.dump() 设置 ensure_ascii=False 保留中文字段",
+        "不使用 PowerShell 正则直接在文件内容上做替换"
+      ]
+    }
+  ]
+}
