@@ -1,281 +1,297 @@
 ---
 name: EncodingGuide
-version: 1.2.0
-author: TwilightRain
-author_url: https://github.com/TwilightRainDev
-license: MIT
-description: Windows PowerShell 中文编码安全基线：乱码、中文路径、JSON/TOML、heredoc、管道、python -c、Out-File 必查。
+description: Windows PowerShell 中文安全基线，按“AI 最容易凭直觉做出的危险操作”索引，给出诊断思路和修正方向，不展开最优实践，只告诉你怎么查、往哪改。
 ---
 
-# Windows PowerShell 编码避坑指南
+# Windows PowerShell 编码故障排查手册
 
-## 核心原则（铁律）
+## 前置红线（阅读任何条目前的必读）
 
-**绝对不要把含中文路径或复杂代码的内容通过管道传给 `python -c` 或通过 heredoc 传递。**
-
-PowerShell 的管道和 heredoc 会在文本传递中自行解析 Unicode、转义符和特殊符号，导致中文变 `??`、脚本崩溃、JSON 乱码。所有问题的根源皆在于此。
-
-```powershell
-# [错误] 错误 - 必定损坏
-@"I:\code\项目\config.json"@ | python -c "..."
-
-# [正确] 正确 - 先写入临时 .py 文件，再执行
-```
+- **绝对不要**把含中文路径或复杂代码的内容通过管道传给 `python -c` / `node -e`
+- **也不要**通过 heredoc 直接内嵌多行脚本传给解释器。  
+	> PowerShell 的管道和 heredoc 会在传递过程中自行解析 Unicode、转义符和括号，导致中文变 `??`、反斜杠被吞、括号被误认为命令调用。  
+- **凡是你直觉想写 `python -c "..."` 的地方，立刻停下来，改成临时文件方案。**
 
 ---
 
-## 一、编写 PowerShell 脚本时的行为准则
+## 索引（按你的直觉动作查找）
 
-当你在 Windows 上编写调用 Python 处理中文内容的 PowerShell 脚本时，遵守以下规则：
+| 如果你的直觉是… | 直接跳转 |
+|----------------|---------|
+| **1. “我把代码用管道或 heredoc 传给 `python -c` 吧，省事”** | [条目一](#条目一管道--heredoc--python--c) |
+| **2. “我把中文路径用双引号拼到命令里传进去”** | [条目二](#条目二中文路径拼接到命令参数) |
+| **3. “我用 `Out-File` 把内容保存到文件，指定 UTF8 总没错”** | [条目三](#条目三out-file-保存文件) |
+| **4. “我改完 JSON 直接 `json.dump` 写回去”** | [条目四](#条目四json-直接-dump) |
+| **5. “我在 PowerShell 里用 `-replace` 或逐行删改 Python 代码”** | [条目五](#条目五powershell-正则替换或逐行编辑) |
+| **6. “我在 Git Bash 工具里用 `node -e` / `python -c` 内嵌脚本改文件”** | [条目六](#条目六git-bash-内嵌脚本-e) |
+| **7. “我用 `head` / `grep` 看一眼文件内容确认结果”** | [条目七](#条目七head--grep-查看文件) |
+| **8. “控制台输出乱码，文件肯定坏了，我重写一遍”** | [条目八](#条目八控制台乱码即文件损坏) |
 
-### 规则 1：永远不要用管道传中文内容给 `python -c`
+---
 
-`python -c` 经过 PowerShell 解析后，中文、特殊符号、转义符都会损坏。任何需要传递给 Python 的代码，都写入临时 `.py` 文件。
+### 条目一：管道 / heredoc → `python -c`
 
-### 规则 2：写临时文件用 `Out-File` + `-LiteralPath` + `UTF8`
-
+**直觉动作**  
 ```powershell
-$script | Out-File -LiteralPath $env:TEMP\tool.py -Encoding UTF8
-python $env:TEMP\tool.py
-Remove-Item $env:TEMP\tool.py
+# 你本能地写出：
+@"I:\code\项目\config.json"@ | python -c "import json; ..."
+# 或
+python -c @"
+print("你好")
+"@
 ```
 
-关键点：
-- `-LiteralPath`（而非 `-Path`）：禁用通配符展开，防止 `[]` 等字符被误解析
-- `-Encoding UTF8`：确保输出 UTF-8，但注意这会带 BOM（对 Python 无影响，但对 TOML 致命）
+**典型症状**  
+- 报 `SyntaxError: invalid character`（如 U+2014）  
+- 中文字符变成 `??` 或乱码  
+- 脚本直接崩溃，或括号/花括号报错  
+- heredoc 意外提前闭合（内部含 `@` 序列时）
 
-### 规则 3：写 TOML 文件时剥离 BOM
+**根本原因**  
+PowerShell 管道和 heredoc 不是透传通道，会自行解析 Unicode 转义、变量插值（`$x` 展开）、括号语法。传给外部程序时，原始字符串已经被改写。
 
-`Out-File -Encoding UTF8` 会在文件头写入 `EF BB BF`（BOM），TOML 解析器会直接报 `Invalid statement (at line 1, column 1)`。
+**诊断思路（怎么确认是这个原因）**  
+1. 把传给 `python -c` 的字符串先 `Write-Host` 打印出来，看是否与你预期一致。  
+2. 如果打印结果中中文已消失或出现 `\uXXXX` 以外的异常字符，就是这个问题。  
+3. 如果 heredoc 提前闭合，观察内容中是否含有单独出现的 `@`（尤其在 JSON 或正则里）。
 
+**解决方向（往哪改）**  
+- **放弃 `python -c` 和 heredoc**。  
+- 把脚本内容赋给一个变量，用 `Out-File -LiteralPath` 写入临时 `.py` 文件，再执行 `python 文件`。  
+- 如果因特殊字符（反引号、管道符）导致写入也失败，退到 **Base64 字节写入**（`WriteAllBytes`）兜底。
+
+---
+
+### 条目二：中文路径拼接到命令参数
+
+**直觉动作**  
 ```powershell
-# [错误] 错误 - 会带 BOM
+$dir = "I:\code\项目"
+python tool.py --path "$dir"
+```
+
+**典型症状**  
+- Python 收到路径后报 `FileNotFoundError`，路径名显示为乱码或截断  
+- 路径中的空格或中文被拆分成多个参数  
+- `os.listdir` 返回空列表
+
+**根本原因**  
+PowerShell 传参给外部程序时，会按系统 ANSI 编码（GBK）转换，中文路径字节损坏。同时路径中的 `[]`、`()` 等可能触发通配符展开。
+
+**诊断思路（怎么确认）**  
+1. 在 Python 脚本里 `print(sys.argv)`，看传进来的参数字符串是否完整。  
+2. 若显示为乱码或丢失字符，则确认为传参编码损坏。
+
+**解决方向（往哪改）**  
+- **不要**把中文路径直接作为命令行参数传递。  
+- **优先方案**：在 PowerShell 中先 `Get-ChildItem` 获取完整路径，然后**将路径硬编码写入临时 Python 脚本内容**（`BASE = r"I:\code\项目"`），执行该脚本。  
+- **兜底方案**：用 Base64 编码路径，在 Python 内解码，但不如临时文件方案稳定。
+
+---
+
+### 条目三：`Out-File` 保存文件
+
+**直觉动作**  
+```powershell
 $content | Out-File pyproject.toml -Encoding UTF8
-
-# [正确] 正确 - 无 BOM
-[System.IO.File]::WriteAllText("pyproject.toml", $content, [System.Text.UTF8Encoding]::new($false))
+# 或保存 .py 脚本
+$script | Out-File tool.py -Encoding UTF8
 ```
+
+**典型症状**  
+- TOML 文件报错：`Invalid statement (at line 1, column 1)`  
+- Python 脚本运行正常（对 BOM 不敏感），但 **TOML 解析器必炸**  
+- 某些工具读取时在文件开头出现不可见字符
+
+**根本原因**  
+`Out-File -Encoding UTF8` 默认写入 **带 BOM 的 UTF-8**（文件头 `EF BB BF`）。TOML 规范不允许 BOM，Python 的 `tomllib` / `tomli` 会直接报错。
+
+**诊断思路（怎么确认）**  
+1. 用十六进制查看器或 `Format-Hex` 查看文件开头：若前三个字节是 `EF BB BF`，就是 BOM 问题。  
+2. 若用记事本另存为 UTF-8（无 BOM）后文件恢复正常，即确诊。
+
+**解决方向（往哪改）**  
+- **保存 TOML 文件**：弃用 `Out-File`，改用  
+  ```powershell
+  [System.IO.File]::WriteAllText("pyproject.toml", $content, [System.Text.UTF8Encoding]::new($false))
+  ```  
+- **保存 .py 脚本**：`Out-File -Encoding UTF8` 可用（Python 接受 BOM），但为统一习惯，推荐一律用 `WriteAllText` 去 BOM。
 
 ---
 
-## 二、中文路径传参的三种方案
+### 条目四：JSON 直接 `dump`
 
-按优先级从高到低：
-
-### 方案 A — 先查路径再硬编码（最稳定）
-
-```powershell
-$dir = (Get-ChildItem I:\code -Directory | Where-Object Name -match "项目").FullName
-# 然后在 Python 脚本中直接使用 r"$dir"（会被 PowerShell 插值为实际路径）
-```
-
-### 方案 B — Out-File 中转（最推荐，适用任何场景）
-
-```powershell
-@"
-import json, os
-BASE = r"$dir"
-# ... 你的 Python 代码 ...
-"@ | Out-File -LiteralPath $env:TEMP\tool.py -Encoding UTF8
-python $env:TEMP\tool.py
-Remove-Item $env:TEMP\tool.py
-```
-
-### 方案 C — Base64 编码（终极兜底）
-
-当内容包含 heredoc 闭合标记 `@`、反引号 `` ` ``、管道符 `|` 等特殊字符导致方案 B 也失败时使用：
-
-```powershell
-$b64 = "IyEvdXNyL2Jpbi9lbnYgcHl0aG9u...（Base64 编码的脚本内容）"
-[System.IO.File]::WriteAllBytes($env:TEMP\tool.py, [System.Convert]::FromBase64String($b64))
-python $env:TEMP\tool.py
-```
-
-`WriteAllBytes` 不经任何文本编码层，写什么得什么，零特殊字符风险。
-
----
-
-## 三、JSON 文件的关键配置（三项必须同时设置）
-
-修改或生成 JSON 文件时，必须同时设置三个参数，缺一不可：
-
+**直觉动作**  
 ```python
-import json
+with open("config.json", "w") as f:
+    json.dump(data, f, indent=2)
+```
 
-# 读取
-with open(path, "r", encoding="utf-8") as f:
-    data = json.load(f)
+**典型症状**  
+- JSON 文件中所有中文变成 `\uXXXX` 转义序列  
+- 文件没有末尾换行，`git diff` 显示整行变更  
+- 其他工具读取时中文显示为 Unicode 码点
 
-# 修改
-data["key"] = "新值"
+**根本原因**  
+`json.dump` 默认 `ensure_ascii=True`，将所有非 ASCII 字符转义；未显式指定 `encoding="utf-8"` 时可能用系统默认编码（GBK）写入。
 
-# 写入 — 三个关键点缺一不可
+**诊断思路（怎么确认）**  
+1. 打开 JSON 文件，若看到 `"\u9879\u76ee"` 而不是 `"项目"`，即为该问题。  
+2. 检查文件编码：若用 GBK 打开不报错但中文乱码，说明写入时用了非 UTF-8。
+
+**解决方向（往哪改）**  
+修改 Python 写入代码，**三个参数缺一不可**：
+```python
 with open(path, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
-    f.write("\n")   # 末尾换行，git diff 友好
+    f.write("\n")   # 加末尾换行
 ```
-
-| 参数 | 作用 | 忘记的后果 |
-|------|------|-----------|
-| `ensure_ascii=False` | 直接输出中文字符 | 整个文件变成 `\uXXXX` 地狱 |
-| `indent=2` | 格式化缩进 | 单行不可读 blob，无法 diff |
-| `encoding="utf-8"` | 明确 UTF-8 编码 | 系统默认编码可能乱码 |
+如果脚本由 PowerShell 临时生成，直接在脚本内容中写死这三项。
 
 ---
 
-## 四、PowerShell 特殊字符避坑速查
+### 条目五：PowerShell 正则替换或逐行编辑
 
-| 场景 | 错误 | 正确 |
-|------|--------|--------|
-| 正则中的 `.` | `-replace ".", "X"` | `-replace "\.", "X"` |
-| 正则中的 `()` | `-replace "(abc)", ""` | `-replace "\(abc\)", ""` |
-| 路径含 `[]` | `-Path "file[1].txt"` | `-LiteralPath "file[1].txt"` |
-| 字符串中的双引号 | `"He said "hi""` | `` "He said`"hi`"" `` |
-| heredoc 内含管道符 | `@ 内容含 \| @` | 改用 Base64 或临时文件 |
+**直觉动作**  
+```powershell
+$lines = Get-Content script.py
+$lines = $lines[0..28] + $lines[30..$count]   # 删一行
+$content -replace "(abc)", ""                # 正则替换
+```
 
-**遇到复杂替换操作，直接调用 Python 的 `str.replace()` 或 `re.sub()`**，避免与 .NET 正则的差异纠缠。
+**典型症状**  
+- Python 脚本运行时报 `IndentationError`（缩进错误）  
+- 替换操作没生效，或替换了不该替换的内容  
+- 正则匹配失败，明明肉眼看到目标字符串却返回原样
+
+**根本原因**  
+1. **逐行删除**会破坏 Python 的缩进结构（例如删除 `if` 的某一行导致后续 `else` 缩进断开）。  
+2. PowerShell 的 `-replace` 使用 .NET 正则，与 Python 正则语法有差异（如转义层级），且路径中的 `[]`、`.`、`()` 不转义会直接匹配失败。  
+
+**诊断思路（怎么确认）**  
+1. 修改后手动检查被删除行前后的缩进层级是否仍连续。  
+2. 对 `-replace` 失败的情况，把替换目标和被替换字符串分别 `Write-Host` 打印，肉眼对比是否一致——通常会发现是反斜杠或括号的转义层级不对。
+
+**解决方向（往哪改）**  
+- **对 Python 代码做结构性增删**：不要逐行操作，改用 Python 自己的 `re.sub` 整体匹配代码块（通过临时脚本完成）。  
+- **对字符串替换**：如果替换逻辑复杂，也交给 Python 的 `str.replace()` 或 `re.sub()` 处理，避免在 PowerShell 层纠缠转义。  
+- 若必须在 PowerShell 内做简单替换，对路径使用 `-LiteralPath` 而非 `-Path`；对正则元字符使用 `[Regex]::Escape()`。
 
 ---
 
-## 五、七大致命陷阱及解决方案
+### 条目六：Git Bash 内嵌脚本（`-e`）
 
-### 陷阱 1：heredoc 内嵌套闭合标记
+> 路径转换与 Shell 检测的通用知识见 `WinBashTest/references/path-conversion.md`；本条聚焦内嵌脚本的三层解析。
 
-内容中恰好包含 `@` 序列时，外层 heredoc 会提前闭合。
-
-```powershell
-# [错误] 炸裂 - 内部的 @ 被误认为是闭合标记
-@"
-python -c @
-print(42)
-@
-"@
-```
-
-**解决**：放弃 heredoc，改用 `Out-File` 或 Base64。
-
-### 陷阱 2：PowerShell 变量插值污染 `python -c`
-
-```powershell
-# [错误] PowerShell 把 $x 展开为空 → Python 收到 " = 1; print()"
-python -c "$x = 1; print($x)"
-```
-
-**解决**：不用 `python -c` 写复杂逻辑，改用临时 `.py` 文件。
-
-### 陷阱 3：括号被 PowerShell 解析器吃掉
-
-```powershell
-# [错误] 括号可能被识别为命令调用语法
-python -c "base64.b64decode('...')"
-```
-
-**根因**：PowerShell 在传给外部程序前会扫描命令行语法，括号、花括号、方括号都可能触发意外解析。
-
-**解决**：改用临时 `.py` 文件。
-
-### 陷阱 4：Unicode 特殊字符经管道损坏
-
-报错：`SyntaxError: invalid character (U+2014)`
-
-**解决**：所有通过 PowerShell 传递给 Python 的源码中，注释和文档字符串只用 ASCII 标点（不要用 em dash `—`、弯引号等）。
-
-### 陷阱 5：Out-File 的 BOM 破坏 TOML
-
-`Out-File -Encoding UTF8` 默认带 BOM，`pip wheel` 会报 `Invalid statement (at line 1, column 1)`。
-
-**解决**：用 `[System.IO.File]::WriteAllText` 配合 `UTF8Encoding($false)` 写出无 BOM 文件。
-
-### 陷阱 6：非 ASCII 字符经 PowerShell 字节级损坏
-
-在 GBK 终端下，`Get-Content` / `Set-Content` 可能静默将 Unicode 字符转换为 GBK 乱码字节，导致后续字符串匹配失败。
-
-**解决**：在 GBK 终端下编辑 Python 文件时，只用纯 ASCII 字符做字符串匹配和替换。如果必须处理 Unicode，交给 Python 脚本而非 PowerShell。
-
-### 陷阱 7：行号编辑 Python 文件的级联损坏
-
-```powershell
-# [错误] 删除一行后，后续 if 语句的缩进可能断掉
-$lines = $lines[0..28] + $lines[30..$count]
-```
-
-**解决**：对 Python 文件做结构性改动时，用 regex 匹配代码块整体替换（`re.sub`），不要逐行操作。缩进是语法，不是装饰。
-
----
-
-## 六、完整工作流模板
-
-生成任何涉及中文路径的 PowerShell+Python 脚本时，使用此模板：
-
-```powershell
-# 1. 安全获取中文路径
-$dir = (Get-ChildItem I:\code -Directory | Where-Object Name -match "项目").FullName
-
-# 2. 生成 Python 脚本到临时文件（不经过管道，关键！）
-$script = @"
-import json, os
-BASE = os.path.join(r"$dir", "subdir")
-for f in ["en_US.json", "zh_CN.json"]:
-    p = os.path.join(BASE, f)
-    with open(p, "r", encoding="utf-8") as fh:
-        d = json.load(fh)
-    d["version_info"] = d["version_info"].replace(" (build {build})", "")
-    with open(p, "w", encoding="utf-8") as fh:
-        json.dump(d, fh, indent=2, ensure_ascii=False)
-        fh.write("\n")
-print("Done")
-"@
-
-# 3. 写入并执行（关键：-LiteralPath 和 UTF8）
-$script | Out-File -LiteralPath $env:TEMP\tool.py -Encoding UTF8
-python $env:TEMP\tool.py
-
-# 4. 清理
-Remove-Item $env:TEMP\tool.py
-```
-
----
-
-## 七、检查文件内容与元数据时的误判陷阱（实战案例）
-
-本节教训来自一次真实误判：检查技能 SKILL.md 的 description 字段时，两种直觉做法都产生了"描述缺失"的假象，而文件本身完好。这与本技能的主题同构——**直觉方法在 Windows 环境下的输出不可轻信，下结论前先怀疑读取方法本身**。
-
-### 用 head/grep 检查 YAML 块标量字段
-
+**直觉动作**  
+在 Bash 工具（如 Git Bash）中：
 ```bash
-# [错误] 误判 - head 截断：description 正文在 | 之后的缩进行中，被截掉了
-head -6 SKILL.md | grep description
-# 输出：description: |    ← 看起来像空值，其实是多行块标量指示符
-
-# [错误] 误判 - 简单正则把 | 本身当成字段值
-# 输出：EMPTY description（实际有 116 字正文）
+node -e 'fs.writeFileSync("p", "D:\\android-sdk")'
+# 或
+python -c "import re; print(re.sub('a', 'b', 'aaa'))"
 ```
 
-**根因**：YAML 的 `|`、`>`（及 `|-`、`>-`、`|+`、`>+` 变体）是多行块标量指示符，正文在**后续缩进行**中。任何只看"键所在行"的做法都会得到看似为空的假象。
+**典型症状**  
+- 文件写入后内容为 `D:android-sdk`（反斜杠全部丢失）  
+- 替换操作报 `SyntaxError` 或 `Not Found`  
+- 用完整行字符串做 `replace` 匹配时，**连续三次返回 NOT FOUND**，而肉眼确认目标行存在
 
-**解决**：
-1. 人工判断用 Read 工具读完整文件——不经 shell 解析，最可靠
-2. 脚本化检查时，识别到块标量指示符后收集**所有后续缩进行**作为正文；判空标准是"块标量后无缩进行"，而非"指示符本身为空"
-3. Windows 控制台输出中文需 `PYTHONIOENCODING=utf-8`，否则结果本身也会乱码，进一步干扰判断
+**根本原因**  
+这是 **三层解析叠加** 的典型案例：
+1. **工具参数 JSON 层**（如 CodeBuddy 的 Bash 工具参数）：剥掉一层反斜杠。  
+2. **Bash 单引号/双引号层**：对反斜杠和特殊字符有自己的解析。  
+3. **目标语言字符串层（JS/Python）**：字符串内部的 `\` 又被解释一次。  
+三层叠加后，**要最终得到 1 个反斜杠，工具调用层需要写 4 个 `\\\\`**。而 `\a`、`\p`、`\w` 等未知转义序列会被静默吞掉反斜杠（JS 中 `\a`→`a`）。
 
-### 把读取方法的缺陷误判为文件缺陷
+**诊断思路（怎么确认）**  
+1. 在目标脚本中加入调试输出，打印实际收到的字符串：  
+   ```bash
+   node -e 'console.log(JSON.stringify(process.argv[2]))' "参数"
+   ```  
+   JSON.stringify 会把每个反斜杠显示为 `\\`，数出真实数量即可核对。  
+2. 对于整行匹配 NOT FOUND：**先取证，再动手**——打印出目标行的实际字节与你的替换字符串字节，差异通常就在反斜杠数量上。
 
-任何"内容缺失 / 损坏 / 为空"的结论，先自问：**是文件的问题，还是读取方法的问题？**
-
-**解决**：用至少两种独立方式交叉验证（Read 工具 vs shell 命令 vs 解析脚本），得出相同结论才可断言。默认假设是读取方法有问题，而不是文件有问题。
+**解决方向（往哪改）**  
+- **路径一律改用正斜杠**（`D:/android-sdk`），Windows API 和 Node/Python 都接受，彻底绕过反斜杠转义层。  
+- **不要用完整行字符串做字面匹配**——改用不含反斜杠的唯一锚点子串（如 `adb 主路径`）定位，再用 `indexOf` + 切片插入，从根上消除转义匹配问题。  
+- 如果必须用反斜杠，工具调用层写 4 个 `\\\\`，并在 JS 里用 `String.raw` 或双反斜杠再处理。
 
 ---
 
-## 八、快速检查清单（总结）
+### 条目七：`head` / `grep` 查看文件
 
-当你或用户编写 PowerShell 脚本时，逐项检查以下各点。发现任一问题，立即采用对应的解决方案：
+**直觉动作**  
+```bash
+head -6 SKILL.md | grep description
+# 或
+grep "description" SKILL.md
+```
 
-1. **中文路径是否经过了管道或 heredoc？** → 改写成临时文件方案（方案 B）
-2. **JSON 读写是否设置了 `ensure_ascii=False` + `encoding="utf-8"` + `indent=2`？**
-3. **文件路径参数是否用了 `-LiteralPath` 而非 `-Path`？**
-4. **`python -c` 里是否包含变量、括号或特殊符号？** → 改用临时 `.py` 文件
-5. **生成的 Python 源码中是否使用了非 ASCII 标点（em dash 等）？** → 改用纯 ASCII
-6. **如果所有方式都失败，是否准备了 Base64 兜底？**（方案 C）
-7. **写 TOML 时，是否用了 `WriteAllText` + `UTF8Encoding($false)` 去 BOM？**
-8. **对 Python 文件做了逐行删除/替换操作？** → 改用 `re.sub` 整体替换代码块
-9. **检查 YAML/JSON 元数据时，只看了键所在行？** → 块标量正文在后续缩进行，用 Read 工具或完整解析验证
+**典型症状**  
+- 输出 `description: |` 后为空，误以为描述字段缺失  
+- 检查 YAML 块标量时，得出“文件损坏”的结论，但用编辑器打开正文完好  
+
+**根本原因**  
+YAML 的 `|`（以及 `>-`、`|+`、`|-` 等变体）是 **多行块标量指示符**，正文在**后续缩进行**中。`head -6` 截断时只抓到了指示符行，正文行可能被截掉；`grep` 只匹配键所在行，自然看不到内容。  
+这不代表文件有问题，而是**读取方法不完整**。
+
+**诊断思路（怎么确认）**  
+1. 用 `cat -A` 或 `xxd` 查看文件完整内容，确认缩进行确实存在。  
+2. 用 **Read 工具**（IDE/编辑器）直接打开完整文件，不经 shell 解析。  
+3. 若用 Python 解析 YAML（`yaml.safe_load`）能正常读取，则确认为 shell 查看方式误判。
+
+**解决方向（往哪改）**  
+- **永远不要仅凭 `head`/`grep` 的输出断定 YAML 块标量字段为空**。  
+- 检查元数据时，优先用 Read 工具读取完整文件内容，或写一段 Python 脚本完整加载 YAML 后再判断。  
+- 脚本化检查时，识别到块标量指示符后，需收集**所有后续缩进行**作为正文，判空标准是“指示符后无缩进行”，而非“指示符本身为空”。
+
+---
+
+### 条目八：控制台乱码即文件损坏
+
+**直觉动作**  
+终端输出显示乱码 → 认为文件编码坏了 → 用 `Set-Content` 或 GBK 重写一遍 → 越改越乱
+
+**典型症状**  
+- `Get-Content` 输出中文显示为 `??` 或方块  
+- 文件中原本正常的中文，经过 PowerShell 变量处理后，后续匹配失败  
+- 在 GBK 终端下运行 Python 脚本，`print("中文")` 输出乱码
+
+**根本原因**  
+Windows 默认控制台代码页是 GBK（936），PowerShell 的 `Get-Content` / `Set-Content` 在不指定 `-Encoding` 时，会**静默使用 GBK 进行字节转换**。UTF-8 文件被当作 GBK 读取时，Unicode 字符被映射为错误的字节序列，甚至不可逆地损坏（如果把乱码写回文件）。  
+**终端乱码 ≠ 文件损坏**，往往是显示层或读取层的编码不匹配。
+
+**诊断思路（怎么确认）**  
+1. 用十六进制工具查看文件原始字节：若开头是 `EF BB BF` 或 UTF-8 序列，则文件本身完好。  
+2. 用 `[System.IO.File]::ReadAllText("文件", [System.Text.UTF8Encoding]::new($false))` 读取，看是否能正确还原中文。若能，说明是 `Get-Content` 的默认编码问题。  
+3. 如果只是终端输出乱码，在 Python 脚本前设置 `$env:PYTHONIOENCODING="utf-8"`，看输出是否正常。
+
+**解决方向（往哪改）**  
+- **读文件**：始终指定 `-Encoding UTF8`（`Get-Content -Encoding UTF8`）。  
+- **写文件**：用 `WriteAllText` 去 BOM（如条目三），或 `Set-Content -Encoding UTF8`（注意它也带 BOM）。  
+- **Python 输出**：设置 `PYTHONIOENCODING=utf-8` 环境变量，或在脚本内 `sys.stdout.reconfigure(encoding='utf-8')`。  
+- **核心判断原则**：默认假设**文件没坏，是你的读法错了**。用至少两种独立方式（编辑器 + 十六进制 + Python 读取）交叉验证，确认一致后才断言文件损坏。
+
+---
+
+## 快速诊断流程图（按现象倒查）
+
+如果你不记得自己的直觉操作，但看到了具体报错/现象，按此索引回溯到对应条目：
+
+| 现象 | 优先查看条目 |
+|-------|-------------|
+| `SyntaxError: invalid character (U+2014)` 或中文变 `??` | [条目一](#条目一管道--heredoc--python--c) |
+| `FileNotFoundError`，路径含中文或方括号 | [条目二](#条目二中文路径拼接到命令参数) |
+| `Invalid statement (at line 1, column 1)`（TOML） | [条目三](#条目三out-file-保存文件) |
+| JSON 文件全是 `\uXXXX` 或 git diff 显示整行变更 | [条目四](#条目四json-直接-dump) |
+| 修改 Python 后 `IndentationError` | [条目五](#条目五powershell-正则替换或逐行编辑) |
+| Bash 中 `node -e` 写入路径丢失反斜杠，或替换 NOT FOUND | [条目六](#条目六git-bash-内嵌脚本-e) |
+| `head`/`grep` 显示字段为空，但编辑器里却有内容 | [条目七](#条目七head--grep-查看文件) |
+| 终端输出乱码，文件读取出错 | [条目八](#条目八控制台乱码即文件损坏) |
+
+---
+
+## 最后的通用诊断原则
+
+> **任何“内容缺失 / 损坏 / 为空”的结论，第一反应不是修文件，而是检查你的读取/传递方法本身。**  
+> 用两种以上独立方式（编辑器直读、十六进制、Python 原生 API、不同命令）交叉验证，得出相同结论后才可断言。默认假设：**你的直觉操作改写了数据，文件本身大概率是好的。**

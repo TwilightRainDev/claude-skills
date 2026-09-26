@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Apple 平台组件起步包 · mode: platform</title>
+
+<!--
+  apple-platform-starter.html —— HtmlDesign 技能 / mode: platform 的起步组件包
+  ====================================================================
+
+  这是什么
+    仿 iOS 应用界面的起步页。每个组件上方都有 HTML 注释标出名字，按名字整段拷走即可。
+
+  怎么用
+    1. cp starter-components/apple-platform-starter.html designs/<project>/index.html
+    2. 改下面那行 <link> 的相对路径，或者把 apple/platform-tokens.css 的内容整段贴进 <style>
+    3. 删掉本文件的演示外壳（.screen、演示开关按钮、文件末尾的 JS），只留要用的组件
+
+  换 mode
+    本文件是 platform mode（仿原生 App，系统色族 + 控件密度）。
+    要营销页/官网请改读 apple/web-mode.md + apple/web-tokens.css —— 两套语言互斥，一页只能用一套。
+
+  权威文件
+    apple/platform-mode.md     组件规格与色板（本文件的实现依据）
+    apple/motion.md            动效参数的唯一权威源
+    apple/platform-tokens.css  唯一的数值来源，本文件不写死任何颜色/字号/圆角
+    apple/checklist.md         交付前逐条核对
+
+  本文件的硬纪律
+    只用 var(--*)；明暗两套自动生效；触控目标 >= 44x44；嵌套圆角满足同心等式；
+    动效只用 --ease-out / --ease-in-out / --ease-drawer 三个 token，禁用清单见 apple/motion.md；
+    图标全部内联 SVG，不用私有区码点字符。
+-->
+
+<!-- 下面这一行：cp 进项目时把相对路径改对，或把 apple/platform-tokens.css 的内容整段贴进 <style> -->
+<link rel="stylesheet" href="../apple/platform-tokens.css">
+
+<style>
+/* ==========================================================================
+   [NOTE] 本地补充 token
+   platform-tokens.css 未定义"强调色之上的前景色"与"浮层遮罩色"，这里按
+   apple/platform-mode.md 的组件规格补齐。所有用法仍走 var()，不散落字面量。
+   上游若补了同名 token，删掉本段改用上游的。
+   ========================================================================== */
+:root {
+  --starter-on-accent: rgba(255, 255, 255, 1);   /* 填充按钮/图标块/角标上的前景色，明暗两套都是它 */
+  --starter-scrim: rgba(0, 0, 0, 0.4);           /* Sheet / Alert 遮罩 */
+  --starter-separator-inset: 60px;               /* 有图标行的内缩分隔线起点（与文字左边缘对齐） */
+  --starter-grabber-h: 5px;                      /* Sheet 抓取条高度（规格给定 36x5） */
+}
+
+/* ==========================================================================
+   屏幕外壳（演示用，接进项目后按需删）
+   ========================================================================== */
+.screen {
+  position: relative;
+  max-width: var(--breakpoint-compact);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin-inline: auto;
+  background: var(--bg-grouped-primary);
+  /* 给固定标签栏让位 */
+  padding-bottom: calc(var(--tabbar-height) + var(--safe-area-bottom) + var(--space-6));
+}
+
+.icon {
+  display: block;
+  flex: none;
+  /* 图标尺寸借用 8pt 网格 token，避免裸 px */
+  width: var(--space-5);
+  height: var(--space-5);
+}
+.icon--sm { width: var(--space-4); height: var(--space-4); }
+.icon--tab { width: var(--space-6); height: var(--space-6); }
+.icon--xl { width: var(--space-10); height: var(--space-10); }
+
+/* 披露指示符：viewBox 8x14，与宽度/高度同比 */
+.icon-chevron {
+  display: block;
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-3-5);
+  color: var(--label-tertiary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: var(--space-px);
+  height: var(--space-px);
+  margin: calc(-1 * var(--space-px));
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 键盘焦点环：统一走系统蓝，行内元素用负 offset 以免被容器圆角裁掉 */
+a:focus-visible,
+button:focus-visible,
+label:focus-visible {
+  outline: 2px solid var(--system-blue);
+  outline-offset: 2px;
+}
+
+.demo-note {
+  margin: 0;
+  padding: var(--space-4) var(--space-4) 0;
+  font-size: var(--text-footnote);
+  line-height: var(--lh-normal);
+  color: var(--label-secondary);
+}
+
+/* ==========================================================================
+   组件：导航栏（Navigation Bar）
+   leading 返回 / center 标题 / trailing 动作，三段式
+   ========================================================================== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  padding-top: calc(var(--space-2) + var(--safe-area-top));
+  background: var(--bg-grouped-primary);
+  border-bottom: var(--space-px) solid var(--separator);
+}
+.navbar__leading { justify-self: start; }
+.navbar__trailing { justify-self: end; }
+.navbar__title {
+  margin: 0;
+  font-size: var(--text-headline);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--label-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 圆形图标按钮：只有符号没有文字，靠内边距补足命中区 */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--system-blue);
+  cursor: pointer;
+  transition: transform var(--duration-instant) var(--ease-out),
+              background-color var(--duration-instant) var(--ease-out);
+}
+.icon-btn:active { transform: scale(0.97); }
+
+/* 纯文字动作按钮 */
+.text-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--system-blue);
+  font-family: inherit;
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: transform var(--duration-instant) var(--ease-out),
+              opacity var(--duration-instant) var(--ease-out);
+}
+.text-btn:active { transform: scale(0.97); }
+.text-btn--prominent { font-weight: var(--fw-semibold); }
+
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover { background: var(--fill-quaternary); }
+  .text-btn:hover { opacity: 0.7; }
+}
+
+/* ==========================================================================
+   组件：分组列表（Grouped List）
+   外层 --bg-grouped-primary + 内层 --bg-grouped-secondary
+   容器圆角 10px 且内边距为 0，行本身不带圆角 —— 首尾行的直角由容器裁掉，
+   因此这里不存在嵌套圆角，不触发同心等式。
+   ========================================================================== */
+.group { margin-top: var(--space-8); }
+
+.group__header,
+.group__footer {
+  margin: 0;
+  padding-inline: var(--space-4);
+  font-size: var(--text-footnote);
+  color: var(--label-secondary);
+}
+.group__header {
+  margin-bottom: var(--space-2);
+  letter-spacing: var(--tracking-wide);
+}
+.group__footer { margin-top: var(--space-2); line-height: var(--lh-normal); }
+
+.group__list {
+  margin-inline: var(--space-4);
+  background: var(--bg-grouped-secondary);
+  border-radius: var(--radius-list-grouped);
+  overflow: hidden;
+}
+
+/* 行：最小行高 44px */
+.list-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--list-row-min-height);
+  padding: var(--space-2-5) var(--space-4);
+  font-size: var(--text-body);
+  color: var(--label-primary);
+  text-decoration: none;
+}
+/* 有图标行：16 + 28 + 16 = 60，正好等于内缩分隔线的起点 */
+.list-row--icon { gap: var(--space-4); }
+.list-row--link { cursor: pointer; }
+
+/* 内缩分隔线：画在本行上沿，按本行自身的内容起点内缩 */
+.list-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline-start: var(--space-4);
+  width: calc(100% - var(--space-4));
+  height: var(--space-px);
+  background: var(--separator);
+}
+.list-row--icon::before {
+  inset-inline-start: var(--starter-separator-inset);
+  width: calc(100% - var(--starter-separator-inset));
+}
+.list-row:first-child::before { content: none; }
+
+/* 行的按压反馈用高亮（iOS 惯例）；缩放只用在按钮与图标按钮上 */
+.list-row--link:active { background: var(--fill-quaternary); }
+@media (hover: hover) and (pointer: fine) {
+  .list-row--link:hover { background: var(--fill-quaternary); }
+}
+
+.list-row__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-row__value {
+  flex: none;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body);
+  color: var(--label-secondary);
+}
+.list-row:focus-visible { outline-offset: calc(-1 * var(--space-0-5)); }
+
+/* iOS 设置风格的图标块（叶子节点，无嵌套圆角） */
+.list-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--space-7);
+  height: var(--space-7);
+  border-radius: var(--radius-md);
+  color: var(--starter-on-accent);
+}
+.list-icon--blue { background: var(--system-blue); }
+.list-icon--indigo { background: var(--system-indigo); }
+.list-icon--orange { background: var(--system-orange); }
+
+/* ==========================================================================
+   组件：开关行（Switch Row）
+   开关本体 51x31，命中区靠 .switch 的 44px 内边距补足
+   ========================================================================== */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+}
+.switch__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.switch__track {
+  display: block;
+  position: relative;
+  width: var(--space-12);
+  height: var(--space-8);
+  border-radius: var(--radius-full);
+  background: var(--fill-primary);
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+.switch__knob {
+  position: absolute;
+  top: var(--space-0-5);
+  inset-inline-start: var(--space-0-5);
+  width: var(--space-7);
+  height: var(--space-7);
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-normal) var(--ease-in-out);
+}
+.switch__input:checked + .switch__track { background: var(--system-green); }
+.switch__input:checked + .switch__track .switch__knob {
+  /* 行程 = 轨道宽 - 滑块宽 - 两侧内缩，全部由 token 推导，不留魔数 */
+  transform: translateX(calc(var(--space-12) - var(--space-7) - var(--space-0-5) * 2));
+}
+.switch__input:focus-visible + .switch__track { box-shadow: var(--shadow-focus); }
+
+/* ==========================================================================
+   组件：卡片（Card）
+   默认变体：外圆角 --radius-card(16) + 内边距 --space-2(8) => 内圆角 --radius-md(8)
+   ========================================================================== */
+.card {
+  margin-inline: var(--space-4);
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+.card__media {
+  display: grid;
+  place-items: center;
+  min-height: var(--space-20);
+  /* 同心：8(内) + 8(内边距) = 16(外) */
+  border-radius: var(--radius-md);
+  background: var(--fill-tertiary);
+  color: var(--system-blue);
+}
+.card__body { padding: var(--space-3) var(--space-2) var(--space-2); }
+.card__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-headline);
+  font-weight: var(--fw-semibold);
+  color: var(--label-primary);
+}
+.card__text {
+  margin: 0;
+  font-size: var(--text-subhead);
+  line-height: var(--lh-normal);
+  color: var(--label-secondary);
+}
+
+/* 卡片统计变体：外 20 + 内边距 4 => 内 16 */
+.stat-card {
+  display: flex;
+  gap: var(--space-1);
+  margin: var(--space-3) var(--space-4) 0;
+  padding: var(--space-1);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+}
+.stat-card__cell {
+  flex: 1 1 0;
+  display: grid;
+  gap: var(--space-0-5);
+  padding: var(--space-3);
+  /* 同心：16(内) + 4(内边距) = 20(外) */
+  border-radius: var(--radius-xl);
+  background: var(--fill-quaternary);
+  text-align: center;
+}
+.stat-card__value {
+  font-size: var(--text-title2);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--label-primary);
+}
+.stat-card__caption {
+  font-size: var(--text-caption1);
+  color: var(--label-secondary);
+}
+
+/* ==========================================================================
+   组件：按钮（主 / 次 / 破坏性）
+   胶囊形，最小高度 44px，按压 scale(0.98) + --duration-instant
+   ========================================================================== */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-inline: var(--space-4);
+}
+.btn-row + .btn-row { margin-top: var(--space-3); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border: 0;
+  border-radius: var(--radius-button);
+  font-family: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
+  cursor: pointer;
+  transition: transform var(--duration-instant) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+.btn:active { transform: scale(0.98); }
+
+.btn--primary {
+  background: var(--system-blue);
+  color: var(--starter-on-accent);
+}
+.btn--secondary {
+  /* 降级底色，紧跟其后的是规格要求的品牌色 10% 底 */
+  background: var(--fill-quaternary);
+  background: color-mix(in srgb, var(--system-blue) 10%, transparent);
+  color: var(--system-blue);
+}
+.btn--destructive {
+  background: var(--system-red);
+  color: var(--starter-on-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* 向 --label-primary 混合：浅色下变深、深色下变亮，明暗两套都对 */
+  .btn--primary:hover {
+    background: color-mix(in srgb, var(--system-blue) 88%, var(--label-primary));
+  }
+  .btn--destructive:hover {
+    background: color-mix(in srgb, var(--system-red) 88%, var(--label-primary));
+  }
+  .btn--secondary:hover {
+    background: color-mix(in srgb, var(--system-blue) 18%, transparent);
+  }
+}
+
+/* ==========================================================================
+   组件：输入框（聚焦态）
+   面板外圆角 20 + 内边距 12 => 输入框内圆角 8（同心）
+   ========================================================================== */
+.panel {
+  margin-inline: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+}
+.panel__label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-footnote);
+  color: var(--label-secondary);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: var(--space-2-5) var(--space-4);
+  border: var(--space-px) solid transparent;
+  /* platform-mode.md 正文写 12px，token 别名 --radius-input 是 8px；此处以 token 为准 */
+  border-radius: var(--radius-input);
+  background: var(--bg-secondary);
+  font-family: inherit;
+  font-size: var(--text-body);
+  color: var(--label-primary);
+  transition: box-shadow var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+.input::placeholder { color: var(--label-tertiary); }
+.input:focus,
+.input[data-demo-focus] {
+  outline: none;
+  border-color: var(--system-blue);
+  box-shadow: var(--shadow-focus);
+}
+/* [NOTE] data-demo-focus 只是为了让聚焦态在静态截图里可见；接进项目后删掉该属性，
+   真实聚焦由 :focus 触发，两者共用同一组声明。 */
+
+.field-hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-caption1);
+  line-height: var(--lh-normal);
+  color: var(--label-secondary);
+}
+
+/* ==========================================================================
+   组件：分段控件（Segmented Control）
+   轨道外圆角 12 + 内边距 4 => 选中块内圆角 8（同心）
+   轨道高 4 + 44 + 4 = 52，保证每段命中区 >= 44x44
+   ========================================================================== */
+.segmented {
+  display: flex;
+  margin-inline: var(--space-4);
+  padding: var(--space-1);
+  background: var(--fill-tertiary);
+  border-radius: var(--radius-lg);
+}
+.segmented__item {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  min-width: 0;
+}
+.segmented__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.segmented__text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-2);
+  /* 同心：8(内) + 4(内边距) = 12(外) */
+  border-radius: var(--radius-md);
+  font-size: var(--text-subhead);
+  color: var(--label-secondary);
+  transition: background-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+.segmented__input:checked + .segmented__text {
+  background: var(--bg-tertiary);
+  color: var(--label-primary);
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--shadow-sm);
+}
+.segmented__input:focus-visible + .segmented__text {
+  outline: 2px solid var(--system-blue);
+  outline-offset: calc(-1 * var(--space-0-5));
+}
+
+/* ==========================================================================
+   组件：搜索框（Search Field）
+   ========================================================================== */
+.search { padding-inline: var(--space-4); }
+.search__field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-input);
+  background: var(--fill-tertiary);
+  color: var(--label-secondary);
+}
+.search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--touch-target-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-body);
+  color: var(--label-primary);
+}
+.search__input::placeholder { color: var(--label-tertiary); }
+.search__input:focus { outline: none; }
+.search__field:focus-within { box-shadow: var(--shadow-focus); }
+
+/* ==========================================================================
+   组件：底部标签栏（Tab Bar）
+   高 49px + 安全区；必须显示文字标签；选中实心图标，未选中线框
+   ========================================================================== */
+.tabbar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--z-fixed);
+  margin-inline: auto;
+  max-width: var(--breakpoint-compact);
+  display: flex;
+  align-items: stretch;
+  height: calc(var(--tabbar-height) + var(--safe-area-bottom));
+  padding-bottom: var(--safe-area-bottom);
+  background: var(--bg-secondary);
+  border-top: var(--space-px) solid var(--separator);
+}
+.tabbar__item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-0-5);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: var(--space-1) var(--space-1) 0;
+  color: var(--label-secondary);
+  font-size: var(--text-caption2);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out),
+              transform var(--duration-instant) var(--ease-out);
+}
+.tabbar__item:active { transform: scale(0.97); }
+.tabbar__item[aria-current="page"] { color: var(--system-blue); }
+.tabbar__label { white-space: nowrap; }
+
+.tabbar__icon-wrap { position: relative; display: block; }
+.tabbar__icon--solid { display: none; }
+.tabbar__item[aria-current="page"] .tabbar__icon--solid { display: block; }
+.tabbar__item[aria-current="page"] .tabbar__icon--outline { display: none; }
+
+.tabbar__badge {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  inset-inline-end: calc(-1 * var(--space-2-5));
+  min-width: var(--space-4);
+  height: var(--space-4);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--system-red);
+  color: var(--starter-on-accent);
+  font-size: var(--text-caption2);
+  line-height: var(--space-4);
+  text-align: center;
+}
+
+/* ==========================================================================
+   遮罩 + 组件：Sheet（含抓取条）
+   500ms --ease-drawer 位移，遮罩同长淡入淡出，两者读作同一个表面
+   ========================================================================== */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop);
+  background: var(--starter-scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-drawer) var(--ease-out);
+}
+.scrim[data-open] { opacity: 1; pointer-events: auto; }
+
+.sheet {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--z-modal);
+  margin-inline: auto;
+  max-width: var(--breakpoint-compact);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-grouped-secondary);
+  border-radius: var(--radius-modal) var(--radius-modal) 0 0;
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform var(--duration-drawer) var(--ease-drawer),
+              opacity var(--duration-normal) var(--ease-out),
+              visibility 0s linear var(--duration-drawer);
+}
+.sheet[data-open] {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transition: transform var(--duration-drawer) var(--ease-drawer),
+              opacity var(--duration-normal) var(--ease-out),
+              visibility 0s linear 0s;
+}
+/* detents */
+.sheet--medium { height: 50vh; }
+.sheet--large { height: 100%; }
+
+.sheet__grabber {
+  flex: none;
+  width: var(--space-9);
+  height: var(--starter-grabber-h);
+  margin: var(--space-1) auto var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--fill-primary);
+}
+.sheet__header {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-2);
+  border-bottom: var(--space-px) solid var(--separator);
+}
+.sheet__header .text-btn:first-child { justify-self: start; }
+.sheet__header .text-btn:last-child { justify-self: end; }
+.sheet__title {
+  margin: 0;
+  font-size: var(--text-headline);
+  font-weight: var(--fw-semibold);
+  color: var(--label-primary);
+}
+.sheet__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--space-4) 0 calc(var(--space-4) + var(--safe-area-bottom));
+}
+.sheet__body .group__list { margin-block: 0; }
+.sheet__body .btn-row { margin-top: var(--space-4); }
+
+/* ==========================================================================
+   组件：警告框（Alert）
+   宽 270px，圆角 14px；最多 3 个按钮；取消在 leading 侧
+   ========================================================================== */
+.alert {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  margin: auto;               /* 配合 inset:0 做两轴居中，避免用 translate 定位 */
+  width: var(--alert-width);
+  /* [NOTE] height:fit-content 不能省：inset:0 + height:auto 会被浏览器拉满全高，
+     margin:auto 就失效了（实测 2400px 视口下弹窗被撑到 2400px 高）。 */
+  height: fit-content;
+  max-width: calc(100vw - var(--space-8));
+  max-height: calc(100% - var(--space-8));
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-alert);
+  overflow: hidden;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.96);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out),
+              visibility 0s linear var(--duration-normal);
+}
+.alert[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out),
+              visibility 0s linear 0s;
+}
+.alert__content { padding: var(--space-5) var(--space-4) var(--space-4); }
+.alert__title {
+  margin: 0;
+  font-size: var(--text-headline);
+  font-weight: var(--fw-semibold);
+  color: var(--label-primary);
+}
+.alert__message {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-footnote);
+  line-height: var(--lh-normal);
+  color: var(--label-secondary);
+}
+.alert__actions {
+  display: flex;
+  border-top: var(--space-px) solid var(--separator);
+}
+.alert__action {
+  flex: 1 1 0;
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-body);
+  color: var(--system-blue);
+  cursor: pointer;
+  transition: transform var(--duration-instant) var(--ease-out),
+              background-color var(--duration-instant) var(--ease-out);
+}
+.alert__action:active { transform: scale(0.98); }
+.alert__action + .alert__action { border-inline-start: var(--space-px) solid var(--separator); }
+.alert__action--cancel { font-weight: var(--fw-semibold); }
+.alert__action--destructive { color: var(--system-red); }
+
+@media (hover: hover) and (pointer: fine) {
+  .alert__action:hover { background: var(--fill-quaternary); }
+}
+</style>
+</head>
+
+<body>
+<div class="screen">
+
+  <!-- ==================== 组件：导航栏（Navigation Bar） ==================== -->
+  <header class="navbar">
+    <div class="navbar__leading">
+      <button class="icon-btn" type="button" data-touch aria-label="返回">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+    </div>
+    <h1 class="navbar__title">设置</h1>
+    <div class="navbar__trailing">
+      <button class="text-btn text-btn--prominent" type="button">完成</button>
+    </div>
+  </header>
+
+  <main>
+    <p class="demo-note">mode: platform 起步组件包。每个组件上方有 HTML 注释标名，按名整段拷走即可。</p>
+
+    <!-- ==================== 组件：分组列表（Grouped List） ==================== -->
+    <section class="group">
+      <h2 class="group__header">网络与连接</h2>
+      <div class="group__list">
+
+        <!-- 组件：信息行（Info Row）+ 披露指示符 -->
+        <a class="list-row list-row--icon list-row--link" href="#">
+          <span class="list-icon list-icon--blue">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.2a15 15 0 0 1 19 0"/><path d="M6.2 13a10 10 0 0 1 11.6 0"/><path d="M9.6 16.6a5 5 0 0 1 4.8 0"/><circle cx="12" cy="20" r="1"/></svg>
+          </span>
+          <span class="list-row__label">无线局域网</span>
+          <span class="list-row__value">公司 5G</span>
+          <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
+        </a>
+
+        <a class="list-row list-row--icon list-row--link" href="#">
+          <span class="list-icon list-icon--indigo">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7.2 16 16.4 12 20.4V3.6l4 4-8 9.2"/></svg>
+          </span>
+          <span class="list-row__label">蓝牙</span>
+          <span class="list-row__value">已打开</span>
+          <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
+        </a>
+
+        <!-- 组件：开关行（Switch Row） -->
+        <label class="list-row list-row--icon list-row--link">
+          <span class="list-icon list-icon--orange">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2a5.6 5.6 0 0 0-5.6 5.6v3L5 15.4h14l-1.4-3.6v-3A5.6 5.6 0 0 0 12 3.2Z"/><path d="M10 18.4a2.1 2.1 0 0 0 4 0"/></svg>
+          </span>
+          <span class="list-row__label">通知</span>
+          <span class="switch">
+            <input class="switch__input" type="checkbox" role="switch" checked>
+            <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
+          </span>
+        </label>
+
+      </div>
+      <p class="group__footer">有图标的行，分隔线内缩到 60px，与文字左边缘对齐。</p>
+    </section>
+
+    <section class="group">
+      <h2 class="group__header">通用</h2>
+      <div class="group__list">
+
+        <!-- 组件：信息行（无图标变体，分隔线内缩 16px） -->
+        <a class="list-row list-row--link" href="#">
+          <span class="list-row__label">关于本机</span>
+          <span class="list-row__value">2.1.233</span>
+          <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
+        </a>
+
+        <a class="list-row list-row--link" href="#">
+          <span class="list-row__label">存储空间</span>
+          <span class="list-row__value">已用 82 GB</span>
+          <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ==================== 组件：卡片（Card） ==================== -->
+    <section class="group">
+      <h2 class="group__header">卡片</h2>
+      <article class="card">
+        <div class="card__media" aria-hidden="true">
+          <svg class="icon icon--xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 18.5a4.5 4.5 0 0 1-.6-8.96 6 6 0 0 1 11.6-1.2A4.2 4.2 0 0 1 18 18.5H6.5Z"/></svg>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">iCloud+ 存储空间</h3>
+          <p class="card__text">200 GB 方案，可与家人共享。媒体块内圆角 8 + 内边距 8 = 外层卡片圆角 16。</p>
+        </div>
+      </article>
+
+      <!-- 组件：卡片（统计变体，同心 16 + 4 = 20） -->
+      <div class="stat-card">
+        <div class="stat-card__cell">
+          <span class="stat-card__value">82</span>
+          <span class="stat-card__caption">已用 GB</span>
+        </div>
+        <div class="stat-card__cell">
+          <span class="stat-card__value">118</span>
+          <span class="stat-card__caption">剩余 GB</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 组件：按钮（主 / 次 / 破坏性） ==================== -->
+    <section class="group">
+      <h2 class="group__header">按钮</h2>
+      <div class="btn-row">
+        <button class="btn btn--primary" type="button">继续</button>
+        <button class="btn btn--secondary" type="button">稍后</button>
+        <button class="btn btn--destructive" type="button">删除账号</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--secondary" type="button" data-opens="sheet-demo" aria-haspopup="dialog" aria-expanded="false">打开 Sheet</button>
+        <button class="btn btn--secondary" type="button" data-opens="alert-demo" aria-haspopup="dialog" aria-expanded="false">显示警告框</button>
+      </div>
+    </section>
+
+    <!-- ==================== 组件：输入框（聚焦态） ==================== -->
+    <section class="group">
+      <h2 class="group__header">输入</h2>
+      <div class="panel">
+        <label class="panel__label" for="f-account">Apple 账户</label>
+        <input class="input" id="f-account" type="text" value="user@example.com" data-demo-focus>
+        <p class="field-hint">聚焦环取自 --shadow-focus。静态演示加了 data-demo-focus，接进项目后删掉该属性即可由真实聚焦触发。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 组件：分段控件（Segmented Control） ==================== -->
+    <section class="group">
+      <h2 class="group__header">分段控件</h2>
+      <div class="segmented" role="radiogroup" aria-label="时间范围">
+        <label class="segmented__item">
+          <input class="segmented__input" type="radio" name="range" value="day">
+          <span class="segmented__text">日</span>
+        </label>
+        <label class="segmented__item">
+          <input class="segmented__input" type="radio" name="range" value="week" checked>
+          <span class="segmented__text">周</span>
+        </label>
+        <label class="segmented__item">
+          <input class="segmented__input" type="radio" name="range" value="month">
+          <span class="segmented__text">月</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ==================== 组件：搜索框（Search Field） ==================== -->
+    <section class="group">
+      <h2 class="group__header">搜索</h2>
+      <div class="search" role="search">
+        <div class="search__field">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16.4 16.4 21 21"/></svg>
+          <input class="search__input" type="search" placeholder="搜索" aria-label="搜索设置">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== 组件：底部标签栏（Tab Bar） ==================== -->
+  <nav class="tabbar" aria-label="主导航">
+    <a class="tabbar__item" href="#" aria-current="page" data-touch>
+      <span class="tabbar__icon-wrap">
+        <svg class="icon icon--tab tabbar__icon--solid" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 21 11.2v9.1a.9.9 0 0 1-.9.9h-4.4v-6.1h-7.4v6.1H3.9a.9.9 0 0 1-.9-.9v-9.1L12 3.2Z" fill="currentColor"/></svg>
+        <svg class="icon icon--tab tabbar__icon--outline" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 21 11.2v9.1a.9.9 0 0 1-.9.9h-4.4v-6.1h-7.4v6.1H3.9a.9.9 0 0 1-.9-.9v-9.1L12 3.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="tabbar__label">首页</span>
+    </a>
+
+    <a class="tabbar__item" href="#" data-touch>
+      <span class="tabbar__icon-wrap">
+        <svg class="icon icon--tab tabbar__icon--solid" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+        <svg class="icon icon--tab tabbar__icon--outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+        <span class="tabbar__badge" aria-hidden="true">3</span>
+      </span>
+      <span class="tabbar__label">组件<span class="visually-hidden">，3 条未读</span></span>
+    </a>
+
+    <a class="tabbar__item" href="#" data-touch>
+      <span class="tabbar__icon-wrap">
+        <svg class="icon icon--tab tabbar__icon--solid" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8a5.7 5.7 0 0 0-5.7 5.7v3.2L4.8 15.6h14.4l-1.5-3.9V8.5A5.7 5.7 0 0 0 12 2.8ZM9.7 18.2a2.4 2.4 0 0 0 4.6 0H9.7Z"/></svg>
+        <svg class="icon icon--tab tabbar__icon--outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8a5.7 5.7 0 0 0-5.7 5.7v3.2L4.8 15.6h14.4l-1.5-3.9V8.5A5.7 5.7 0 0 0 12 2.8Z"/><path d="M9.7 18.2a2.4 2.4 0 0 0 4.6 0"/></svg>
+      </span>
+      <span class="tabbar__label">动态</span>
+    </a>
+
+    <a class="tabbar__item" href="#" data-touch>
+      <span class="tabbar__icon-wrap">
+        <svg class="icon icon--tab tabbar__icon--solid" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8.3" r="4.1"/><path d="M12 14.2a7.4 7.4 0 0 0-7.4 7.4h14.8a7.4 7.4 0 0 0-7.4-7.4Z"/></svg>
+        <svg class="icon icon--tab tabbar__icon--outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.3" r="4.1"/><path d="M4.6 21.6a7.4 7.4 0 0 1 14.8 0"/></svg>
+      </span>
+      <span class="tabbar__label">我的</span>
+    </a>
+  </nav>
+
+  <!-- ==================== 组件：Sheet（遮罩 + 抓取条 + detents） ==================== -->
+  <div class="scrim" data-scrim-for="sheet-demo" aria-hidden="true"></div>
+  <section class="sheet sheet--medium" id="sheet-demo" data-animated role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet__grabber" aria-hidden="true"></div>
+    <header class="sheet__header">
+      <button class="text-btn" type="button" data-close="sheet-demo">取消</button>
+      <h2 class="sheet__title" id="sheet-title">选择网络</h2>
+      <button class="text-btn text-btn--prominent" type="button" data-close="sheet-demo" data-autofocus>完成</button>
+    </header>
+    <div class="sheet__body">
+      <div class="group__list">
+        <a class="list-row list-row--link" href="#">
+          <span class="list-row__label">公司 5G</span>
+          <span class="list-row__value">已连接</span>
+          <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
+        </a>
+        <a class="list-row list-row--link" href="#">
+          <span class="list-row__label">会议室</span>
+          <span class="list-row__value">需要密码</span>
+          <svg class="icon-chevron" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--primary" type="button" data-close="sheet-demo">加入网络</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 组件：警告框（Alert，270px） ==================== -->
+  <div class="scrim" data-scrim-for="alert-demo" aria-hidden="true"></div>
+  <div class="alert" id="alert-demo" data-animated role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-desc">
+    <div class="alert__content">
+      <h2 class="alert__title" id="alert-title">删除账号</h2>
+      <p class="alert__message" id="alert-desc">该操作不可撤销，账号内的 82 GB 数据将一并删除。</p>
+    </div>
+    <div class="alert__actions">
+      <button class="alert__action alert__action--cancel" type="button" data-close="alert-demo" data-autofocus>取消</button>
+      <button class="alert__action alert__action--destructive" type="button" data-close="alert-demo">删除</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================================
+   演示用最小 JS：只负责 Sheet / Alert 的开关。
+   真实项目里删掉这一段，换成你自己的状态管理。
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled])';
+  var openers = {};
+
+  function panelOf(id) { return document.getElementById(id); }
+  function scrimOf(id) { return document.querySelector('[data-scrim-for="' + id + '"]'); }
+
+  function openPanel(id, opener) {
+    var panel = panelOf(id);
+    if (!panel) { return; }
+    var scrim = scrimOf(id);
+    panel.setAttribute('data-open', '');
+    if (scrim) { scrim.setAttribute('data-open', ''); }
+    if (opener) {
+      opener.setAttribute('aria-expanded', 'true');
+      openers[id] = opener;
+    }
+    // 强制一次样式重算：面板刚拿到 data-open，visibility 可能还是 hidden，
+    // 此时 focus() 会被浏览器直接忽略（实测 Sheet 的焦点会静默丢失）。
+    var target = panel.querySelector('[data-autofocus]') || panel.querySelector(FOCUSABLE);
+    if (target) {
+      void panel.offsetHeight;
+      target.focus();
+    }
+  }
+
+  function closePanel(id) {
+    var panel = panelOf(id);
+    if (!panel) { return; }
+    var scrim = scrimOf(id);
+    panel.removeAttribute('data-open');
+    if (scrim) { scrim.removeAttribute('data-open'); }
+    var opener = openers[id];
+    if (opener) {
+      opener.setAttribute('aria-expanded', 'false');
+      opener.focus();
+      delete openers[id];
+    }
+  }
+
+  function each(list, fn) { Array.prototype.forEach.call(list, fn); }
+
+  each(document.querySelectorAll('[data-opens]'), function (el) {
+    el.addEventListener('click', function () {
+      openPanel(el.getAttribute('data-opens'), el);
+    });
+  });
+
+  each(document.querySelectorAll('[data-close]'), function (el) {
+    el.addEventListener('click', function () {
+      closePanel(el.getAttribute('data-close'));
+    });
+  });
+
+  each(document.querySelectorAll('[data-scrim-for]'), function (el) {
+    el.addEventListener('click', function () {
+      closePanel(el.getAttribute('data-scrim-for'));
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') { return; }
+    each(document.querySelectorAll('[data-open]'), function (panel) {
+      if (panel.id) { closePanel(panel.id); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

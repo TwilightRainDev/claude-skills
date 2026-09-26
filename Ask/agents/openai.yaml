@@ -1,0 +1,5 @@
+interface:
+  display_name: "技能路由 Skill Router"
+  short_description: "路由到最合适的已装技能并直接加载执行"
+policy:
+  allow_implicit_invocation: true

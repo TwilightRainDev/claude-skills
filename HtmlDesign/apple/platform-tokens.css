@@ -1,0 +1,305 @@
+/**
+ * mode: platform —— iOS / macOS 应用界面 token
+ * 权威说明见 apple/platform-mode.md；动效参数权威源为 apple/motion.md。
+ *
+ * 明暗两套齐全。只写变量层，不写工具类。
+ */
+
+:root {
+  /* ==================== 字体 ==================== */
+  --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
+  --font-rounded: -apple-system-rounded, 'SF Pro Rounded', 'Helvetica Neue Rounded', var(--font-system);
+
+  /* ==================== 字号阶（iOS） ==================== */
+  --text-caption2: 11px;
+  --text-caption1: 12px;
+  --text-footnote: 13px;
+  --text-subhead: 15px;
+  --text-callout: 16px;
+  --text-body: 17px;
+  --text-headline: 17px;
+  --text-title3: 20px;
+  --text-title2: 22px;
+  --text-title1: 28px;
+  --text-large-title: 34px;
+
+  /* 显示尺寸（hero） */
+  --text-display-sm: 40px;
+  --text-display-md: 56px;
+  --text-display-lg: 80px;
+  --text-display-xl: 96px;
+
+  /* ==================== 字重 ==================== */
+  --fw-ultralight: 100;
+  --fw-thin: 200;
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-heavy: 800;
+  --fw-black: 900;
+
+  /* ==================== 行高 ==================== */
+  --lh-tight: 1.1;
+  --lh-snug: 1.2;
+  --lh-normal: 1.4;
+  --lh-relaxed: 1.5;
+  --lh-loose: 1.75;
+
+  /* ==================== 字距 ==================== */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-wider: 0.04em;
+
+  /* ==================== 系统色（浅色） ==================== */
+  --system-blue: #007AFF;
+  --system-green: #34C759;
+  --system-indigo: #5856D6;
+  --system-orange: #FF9500;
+  --system-pink: #FF2D55;
+  --system-purple: #AF52DE;
+  --system-red: #FF3B30;
+  --system-teal: #5AC8FA;
+  --system-yellow: #FFCC00;
+  --system-cyan: #32ADE6;
+  --system-mint: #00C7BE;
+  --system-brown: #A2845E;
+
+  /* 灰度（浅色） */
+  --system-gray: #8E8E93;
+  --system-gray2: #AEAEB2;
+  --system-gray3: #C7C7CC;
+  --system-gray4: #D1D1D6;
+  --system-gray5: #E5E5EA;
+  --system-gray6: #F2F2F7;
+
+  /* 文字四级（浅色） */
+  --label-primary: #000000;
+  --label-secondary: rgba(60, 60, 67, 0.6);
+  --label-tertiary: rgba(60, 60, 67, 0.3);
+  --label-quaternary: rgba(60, 60, 67, 0.18);
+
+  /* 填充（两层叠加用） */
+  --fill-primary: rgba(120, 120, 128, 0.2);
+  --fill-secondary: rgba(120, 120, 128, 0.16);
+  --fill-tertiary: rgba(120, 120, 128, 0.12);
+  --fill-quaternary: rgba(120, 120, 128, 0.08);
+
+  /* 背景 */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F2F2F7;
+  --bg-tertiary: #FFFFFF;
+  --bg-grouped-primary: #F2F2F7;
+  --bg-grouped-secondary: #FFFFFF;
+  --bg-grouped-tertiary: #F2F2F7;
+
+  /* 分隔线 */
+  --separator: rgba(60, 60, 67, 0.29);
+  --separator-opaque: #C6C6C8;
+
+  /* ==================== 间距 —— 8pt 网格 ==================== */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-28: 112px;
+  --space-32: 128px;
+
+  /* ==================== 圆角 —— 同心规则 ====================
+     内圆角 + 内边距 = 外圆角。嵌套不满足此等式会"不圆"。 */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+  --radius-full: 9999px;
+
+  --radius-button: var(--radius-full);   /* 胶囊 */
+  --radius-card: var(--radius-xl);       /* 16px */
+  --radius-modal: var(--radius-2xl);     /* 20px */
+  --radius-input: var(--radius-md);      /* 8px */
+  --radius-alert: 14px;
+  --radius-list-grouped: 10px;
+
+  /* ==================== 阴影 ==================== */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.06), 0 8px 10px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+  --shadow-focus: 0 0 0 4px rgba(0, 122, 255, 0.3);
+  --shadow-focus-error: 0 0 0 4px rgba(255, 59, 48, 0.3);
+  --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* ==================== 模糊 ==================== */
+  --blur-none: 0;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  --blur-2xl: 40px;
+  --blur-3xl: 64px;
+  --backdrop-blur: blur(20px) saturate(180%);
+
+  /* ==================== 布局 ==================== */
+  --container-xs: 320px;
+  --container-sm: 480px;
+  --container-md: 640px;
+  --container-lg: 768px;
+  --container-xl: 1024px;
+  --container-2xl: 1280px;
+  --container-max: 1440px;
+
+  --breakpoint-compact: 430px;
+  --breakpoint-regular: 744px;
+  --breakpoint-large: 1024px;
+  --breakpoint-xl: 1280px;
+
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+  --z-max: 9999;
+
+  /* ==================== 触控目标 ==================== */
+  --touch-target-min: 44px;          /* iOS 最小值 */
+  --touch-target-comfortable: 48px;
+  --touch-target-spacious: 56px;
+  --touch-target-vision: 60px;       /* visionOS 最小值 */
+
+  /* ==================== 组件固定尺寸 ==================== */
+  --tabbar-height: 49px;
+  --alert-width: 270px;
+  --list-row-min-height: 44px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-top: env(safe-area-inset-top, 0px);
+
+  /* ==================== 动效（权威源 apple/motion.md） ====================
+     注意：本 mode 的原始素材提供过 --ease-in 与贝塞尔伪弹簧，二者均禁用。 */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --duration-instant: 100ms;   /* 微交互 / 按压 */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;    /* 标准过渡 */
+  --duration-slow: 300ms;      /* 上限，复杂动画 */
+  --duration-drawer: 500ms;
+}
+
+/* ==================== 深色模式 ==================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --system-blue: #0A84FF;
+    --system-green: #30D158;
+    --system-indigo: #5E5CE6;
+    --system-orange: #FF9F0A;
+    --system-pink: #FF375F;
+    --system-purple: #BF5AF2;
+    --system-red: #FF453A;
+    --system-teal: #64D2FF;
+    --system-yellow: #FFD60A;
+
+    --system-gray: #8E8E93;
+    --system-gray2: #636366;
+    --system-gray3: #48484A;
+    --system-gray4: #3A3A3C;
+    --system-gray5: #2C2C2E;
+    --system-gray6: #1C1C1E;
+
+    --label-primary: #FFFFFF;
+    --label-secondary: rgba(235, 235, 245, 0.6);
+    --label-tertiary: rgba(235, 235, 245, 0.3);
+    --label-quaternary: rgba(235, 235, 245, 0.18);
+
+    --fill-primary: rgba(120, 120, 128, 0.36);
+    --fill-secondary: rgba(120, 120, 128, 0.32);
+    --fill-tertiary: rgba(120, 120, 128, 0.24);
+    --fill-quaternary: rgba(120, 120, 128, 0.18);
+
+    --bg-primary: #000000;
+    --bg-secondary: #1C1C1E;
+    --bg-tertiary: #2C2C2E;
+    --bg-grouped-primary: #000000;
+    --bg-grouped-secondary: #1C1C1E;
+    --bg-grouped-tertiary: #2C2C2E;
+
+    --separator: rgba(84, 84, 88, 0.6);
+    --separator-opaque: #38383A;
+  }
+}
+
+/* ==================== 基础重置 ==================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-system);
+  font-size: var(--text-body);
+  line-height: var(--lh-normal);
+  color: var(--label-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 触控目标兜底：小元素靠内边距补足命中区 */
+[data-touch] { min-width: var(--touch-target-min); min-height: var(--touch-target-min); }
+
+/* ==================== 无障碍：必须随动画一起交付 ==================== */
+@media (prefers-reduced-motion: reduce) {
+  /* 更温和的变体，不是一刀切成 0.01ms */
+  *, *::before, *::after {
+    animation-duration: 200ms !important;
+    transition-duration: 200ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  [data-animated] { transform: none !important; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-material] {
+    background: var(--bg-tertiary);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  [data-material] {
+    background: var(--bg-primary);
+    backdrop-filter: none;
+    border: 1px solid var(--separator-opaque);
+  }
+}

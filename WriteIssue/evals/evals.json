@@ -1,0 +1,29 @@
+{
+  "skill_name": "WriteIssue",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我的 Docker 容器跑起来后，应用写日志报错：Error: EACCES: permission denied, open '/data/app.log'。我用的系统是 Ubuntu。帮我写一个 GitHub issue 发到那个项目的仓库。",
+      "expected_output": "issue 标题含关键组件（Docker/挂载卷/权限）且无「求助/救命/急」；正文含环境（OS 版本、部署方式/镜像）、已做功课、复现步骤或最小复现命令、实际 vs 预期、事实与推测分离（推测有标记）、报错在代码块中；缺失信息（镜像标签、docker run 命令、容器内 uid）被追问或在 issue 中明确标注，而非编造",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "我用你们这个 Python 库的 SDK 调 API，返回 500，肯定是你这个库的问题！帮我写个 issue，标题就叫「你们的库有 bug」。附上：curl 命令、报错 JSON。我其实是想把本地数据同步到云端，用这个库的 client.upload() 一直失败。",
+      "expected_output": "不顺着用户声称「库有 bug」——表述为异常行为或对归因存疑；先写真实目标（数据同步）再写尝试方案（client.upload()）；标题含组件与现象且无情绪化「bug！」指控；cURL/最小代码在代码块中；事实（500 报错原文）与推测分离；无「有人能帮我吗」式废话",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我的程序又崩了，救命啊！！！帮我写个 issue 发 GitHub。这是一段日志，开头是 'getaddrinfo ENOTFOUND db.internal'，后面跟一堆 SQL 连接失败的报错（约 200 行）。项目是英文的，README 也是英文。",
+      "expected_output": "标题无「救命/求助/急」字样、含组件与现象；日志用代码块且被裁剪过滤（提取关键段如 ENOTFOUND 上下文），非原样倾倒 200 行；英文项目 → issue 用英文书写，且如经 AI 翻译附声明行「Please note that these questions were generated with the assistance of AI translation...」；实际 vs 预期分离；去掉「求求各位大佬」类情绪化措辞；结尾有礼貌收尾；信息按重要性排序（核心报错在前）",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我很急！！我的 GitHub Actions 流水线挂了，帮我把 issue 写了，标题就叫「救命！！CI 挂了」。别问东问西的，我没时间回答。日志我给你了：'Error: can't find node_modules'。细节你看着编就行，能发出去就行。",
+      "expected_output": "标题无「救命/求助/急」字样、含组件与现象；不把用户未提供的信息（仓库名、workflow 文件、运行器、Node 版本）编造成事实；核查或追问搜索门禁（旧帖/文档/FAQ）；正文有环境与复现结构而非一句「我的 CI 挂了」；不当甩锅侠；有礼貌收尾",
+      "files": []
+    }
+  ]
+}

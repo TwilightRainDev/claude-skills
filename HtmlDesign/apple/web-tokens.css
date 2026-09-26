@@ -1,0 +1,204 @@
+/**
+ * mode: web —— apple.com 官网视觉 token
+ * 权威说明见 apple/web-mode.md；动效参数权威源为 apple/motion.md。
+ *
+ * 用法：制品里 @import 本文件，或整段贴进 <style>。
+ * 只写变量层，不写工具类 —— 工具类会让产物带上用不到的样式。
+ */
+
+:root {
+  /* ---------- 强调色（只有一个） ---------- */
+  --primary: #0066cc;
+  --primary-focus: #0071e3;
+  --primary-on-dark: #2997ff;
+  --on-primary: #ffffff;
+
+  /* ---------- 表面 ---------- */
+  --canvas: #ffffff;
+  --canvas-parchment: #f5f5f7;
+  --surface-pearl: #fafafc;
+  --surface-tile-1: #272729;
+  --surface-tile-2: #2a2a2c;
+  --surface-tile-3: #252527;
+  --surface-black: #000000;
+  --surface-chip-translucent: rgba(210, 210, 215, 0.64);
+
+  /* ---------- 文字 ---------- */
+  --ink: #1d1d1f;
+  --body: #1d1d1f;
+  --body-on-dark: #ffffff;
+  --body-muted: #cccccc;
+  --ink-muted-80: #333333;
+  --ink-muted-48: #7a7a7a;
+
+  /* ---------- 发丝线与分隔 ---------- */
+  --divider-soft: rgba(0, 0, 0, 0.04);
+  --hairline: #e0e0e0;
+
+  /* ---------- 字体 ---------- */
+  --font-display: "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-text: "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* 非 Apple 平台替代：引入 Inter 后把上面两行换成 Inter */
+  --font-display-alt: "Inter", system-ui, sans-serif;
+  --font-text-alt: "Inter", system-ui, sans-serif;
+
+  /* ---------- 字号阶 ---------- */
+  --text-hero-display: 56px;
+  /* 主视觉标题的响应式降档（断点表：1068px → 40px 复用 display-lg，640px → 34px，419px → 28px） */
+  --text-hero-sm: 34px;
+  --text-hero-xs: 28px;
+  --text-display-lg: 40px;
+  --text-display-md: 34px;
+  --text-lead: 28px;
+  --text-lead-airy: 24px;
+  --text-tagline: 21px;
+  --text-button-large: 18px;
+  --text-body: 17px;
+  --text-caption: 14px;
+  --text-fine-print: 12px;
+  --text-micro-legal: 10px;
+
+  /* ---------- 行高 ---------- */
+  --lh-hero-display: 1.07;
+  --lh-display-lg: 1.1;
+  --lh-display-md: 1.47;
+  --lh-lead: 1.14;
+  --lh-lead-airy: 1.5;
+  --lh-tagline: 1.19;
+  --lh-body: 1.47;
+  --lh-body-strong: 1.24;
+  --lh-caption: 1.43;
+  --lh-caption-strong: 1.29;
+  --lh-dense-link: 2.41;   /* 页脚密集链接列，反常地松，是特性不是 bug */
+  --lh-fine-print: 1.0;
+
+  /* ---------- 字距（尺寸专属，绝不用一个值通吃） ---------- */
+  --ls-hero-display: -0.28px;
+  --ls-display-lg: 0;
+  --ls-display-md: -0.374px;
+  --ls-lead: 0.196px;
+  --ls-tagline: 0.231px;
+  --ls-body: -0.374px;
+  --ls-caption: -0.224px;
+  --ls-fine-print: -0.12px;
+  --ls-micro-legal: -0.08px;
+
+  /* ---------- 字重（阶梯 300/400/600/700，500 被刻意剔除） ---------- */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* ---------- 间距（8px 基准） ---------- */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 17px;    /* 正文行高倍数同源，是这套体系的通用节奏常量 */
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  /* 脱离主阶梯的 64px：页脚纵向内边距与"瓦片标题上方至少 64px 空气"规则要求它 */
+  --space-2xl: 64px;
+  --space-section: 80px;
+
+  /* ---------- 圆角 ---------- */
+  --rounded-none: 0px;
+  --rounded-xs: 5px;
+  --rounded-sm: 8px;
+  --rounded-md: 11px;
+  --rounded-lg: 18px;
+  --rounded-pill: 9999px;
+
+  /* ---------- 纵深（全系统仅此一处投影，只给产品图） ---------- */
+  --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+  --shadow-hairline: 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+  /* ---------- 材质 ---------- */
+  --blur-material: blur(20px) saturate(180%);
+  --material-parchment: rgba(245, 245, 247, 0.8);
+
+  /* ---------- 布局 ---------- */
+  --container-text: 980px;
+  --container-max: 1440px;
+  --nav-global-height: 44px;
+  --nav-sub-height: 52px;
+  --sticky-bar-height: 64px;
+  --touch-target-min: 44px;
+
+  /* ---------- 动效（权威源 apple/motion.md，禁用 ease-in） ---------- */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --duration-press: 160ms;
+  --duration-tooltip: 125ms;
+  --duration-popover: 200ms;
+  --duration-dropdown: 200ms;
+  --duration-modal: 250ms;
+  --duration-drawer: 500ms;
+  --duration-toast: 400ms;
+}
+
+/* ---------- 断点（媒体查询里不能直接用变量，此处列出供参照） ----------
+   ≤ 419px  小手机    单列，主视觉 28px
+   420–640  手机      单列，h1 34px
+   641–735  大手机    瓦片纵向内边距 48px
+   736–833  平板竖    全局导航折叠为汉堡
+   834–1023 平板横    导航展开，3 列栅格变 2 列
+   1024–1068 小桌面   瓦片 2/3 宽
+   1069–1440 桌面     完整布局
+   ≥ 1441   宽桌面    内容锁 1440px
+   ------------------------------------------------------------------- */
+
+/* ---------- 基础重置（制品可选，推荐保留） ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 主视觉标题：负字距是"Apple 紧"的来源 */
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-hero-display);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-hero-display);
+  letter-spacing: var(--ls-hero-display);
+  margin: 0;
+}
+
+/* 全系统统一的按下微交互 */
+button, a[role="button"] {
+  transition: transform var(--duration-press) var(--ease-out);
+}
+button:active, a[role="button"]:active { transform: scale(0.95); }
+
+:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- 无障碍：必须随动画一起交付 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 200ms !important;
+    transition-duration: 200ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  /* 去掉位移与缩放，保留透明度与颜色 —— 不是一刀切成 0 */
+  .reveal, [data-animated] { transform: none !important; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .toolbar, .sub-nav, .sticky-bar {
+    background: var(--canvas-parchment);
+    backdrop-filter: none;
+  }
+}

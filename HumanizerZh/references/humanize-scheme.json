@@ -1,0 +1,441 @@
+[
+  {
+    "Name": "去AI味标点归一",
+    "Description": "面向中文去 AI 味的确定性标点归一：隐形字符清理、省略号统一、重复标点折叠、混乱组合标点、全角字母数字转半角",
+    "IsBuiltIn": false,
+    "Rules": [
+      {
+        "Find": "​",
+        "Replace": ""
+      },
+      {
+        "Find": "﻿",
+        "Replace": ""
+      },
+      {
+        "Find": "‎",
+        "Replace": ""
+      },
+      {
+        "Find": "‏",
+        "Replace": ""
+      },
+      {
+        "Find": "⁠",
+        "Replace": ""
+      },
+      {
+        "Find": "­",
+        "Replace": ""
+      },
+      {
+        "Find": " ",
+        "Replace": " "
+      },
+      {
+        "Find": "……",
+        "Replace": ""
+      },
+      {
+        "Find": "…",
+        "Replace": "……"
+      },
+      {
+        "Find": "",
+        "Replace": "……"
+      },
+      {
+        "Find": "…………",
+        "Replace": "……"
+      },
+      {
+        "Find": "......",
+        "Replace": "……"
+      },
+      {
+        "Find": "...",
+        "Replace": "……"
+      },
+      {
+        "Find": "…….",
+        "Replace": "……"
+      },
+      {
+        "Find": ".……",
+        "Replace": "……"
+      },
+      {
+        "Find": "。。",
+        "Replace": "。"
+      },
+      {
+        "Find": "，，",
+        "Replace": "，"
+      },
+      {
+        "Find": "、、",
+        "Replace": "、"
+      },
+      {
+        "Find": "？？",
+        "Replace": "？"
+      },
+      {
+        "Find": "！！",
+        "Replace": "！"
+      },
+      {
+        "Find": "；；",
+        "Replace": "；"
+      },
+      {
+        "Find": "：：",
+        "Replace": "："
+      },
+      {
+        "Find": "。，",
+        "Replace": "。"
+      },
+      {
+        "Find": "，。",
+        "Replace": "。"
+      },
+      {
+        "Find": "？，",
+        "Replace": "？"
+      },
+      {
+        "Find": "，？",
+        "Replace": "？"
+      },
+      {
+        "Find": "。？",
+        "Replace": "？"
+      },
+      {
+        "Find": "？。",
+        "Replace": "？"
+      },
+      {
+        "Find": "！，",
+        "Replace": "！"
+      },
+      {
+        "Find": "，！",
+        "Replace": "！"
+      },
+      {
+        "Find": "。！",
+        "Replace": "！"
+      },
+      {
+        "Find": "！。",
+        "Replace": "！"
+      },
+      {
+        "Find": "；，",
+        "Replace": "；"
+      },
+      {
+        "Find": "，；",
+        "Replace": "；"
+      },
+      {
+        "Find": "：，",
+        "Replace": "："
+      },
+      {
+        "Find": "，：",
+        "Replace": "："
+      },
+      {
+        "Find": "「，",
+        "Replace": "「"
+      },
+      {
+        "Find": "“，",
+        "Replace": "“"
+      },
+      {
+        "Find": "「。",
+        "Replace": "「"
+      },
+      {
+        "Find": "“。",
+        "Replace": "“"
+      },
+      {
+        "Find": "「；",
+        "Replace": "「"
+      },
+      {
+        "Find": "“；",
+        "Replace": "“"
+      },
+      {
+        "Find": "「！",
+        "Replace": "「"
+      },
+      {
+        "Find": "“！",
+        "Replace": "“"
+      },
+      {
+        "Find": "「？",
+        "Replace": "「"
+      },
+      {
+        "Find": "“？",
+        "Replace": "“"
+      },
+      {
+        "Find": "Ａ",
+        "Replace": "A"
+      },
+      {
+        "Find": "Ｂ",
+        "Replace": "B"
+      },
+      {
+        "Find": "Ｃ",
+        "Replace": "C"
+      },
+      {
+        "Find": "Ｄ",
+        "Replace": "D"
+      },
+      {
+        "Find": "Ｅ",
+        "Replace": "E"
+      },
+      {
+        "Find": "Ｆ",
+        "Replace": "F"
+      },
+      {
+        "Find": "Ｇ",
+        "Replace": "G"
+      },
+      {
+        "Find": "Ｈ",
+        "Replace": "H"
+      },
+      {
+        "Find": "Ｉ",
+        "Replace": "I"
+      },
+      {
+        "Find": "Ｊ",
+        "Replace": "J"
+      },
+      {
+        "Find": "Ｋ",
+        "Replace": "K"
+      },
+      {
+        "Find": "Ｌ",
+        "Replace": "L"
+      },
+      {
+        "Find": "Ｍ",
+        "Replace": "M"
+      },
+      {
+        "Find": "Ｎ",
+        "Replace": "N"
+      },
+      {
+        "Find": "Ｏ",
+        "Replace": "O"
+      },
+      {
+        "Find": "Ｐ",
+        "Replace": "P"
+      },
+      {
+        "Find": "Ｑ",
+        "Replace": "Q"
+      },
+      {
+        "Find": "Ｒ",
+        "Replace": "R"
+      },
+      {
+        "Find": "Ｓ",
+        "Replace": "S"
+      },
+      {
+        "Find": "Ｔ",
+        "Replace": "T"
+      },
+      {
+        "Find": "Ｕ",
+        "Replace": "U"
+      },
+      {
+        "Find": "Ｖ",
+        "Replace": "V"
+      },
+      {
+        "Find": "Ｗ",
+        "Replace": "W"
+      },
+      {
+        "Find": "Ｘ",
+        "Replace": "X"
+      },
+      {
+        "Find": "Ｙ",
+        "Replace": "Y"
+      },
+      {
+        "Find": "Ｚ",
+        "Replace": "Z"
+      },
+      {
+        "Find": "ａ",
+        "Replace": "a"
+      },
+      {
+        "Find": "ｂ",
+        "Replace": "b"
+      },
+      {
+        "Find": "ｃ",
+        "Replace": "c"
+      },
+      {
+        "Find": "ｄ",
+        "Replace": "d"
+      },
+      {
+        "Find": "ｅ",
+        "Replace": "e"
+      },
+      {
+        "Find": "ｆ",
+        "Replace": "f"
+      },
+      {
+        "Find": "ｇ",
+        "Replace": "g"
+      },
+      {
+        "Find": "ｈ",
+        "Replace": "h"
+      },
+      {
+        "Find": "ｉ",
+        "Replace": "i"
+      },
+      {
+        "Find": "ｊ",
+        "Replace": "j"
+      },
+      {
+        "Find": "ｋ",
+        "Replace": "k"
+      },
+      {
+        "Find": "ｌ",
+        "Replace": "l"
+      },
+      {
+        "Find": "ｍ",
+        "Replace": "m"
+      },
+      {
+        "Find": "ｎ",
+        "Replace": "n"
+      },
+      {
+        "Find": "ｏ",
+        "Replace": "o"
+      },
+      {
+        "Find": "ｐ",
+        "Replace": "p"
+      },
+      {
+        "Find": "ｑ",
+        "Replace": "q"
+      },
+      {
+        "Find": "ｒ",
+        "Replace": "r"
+      },
+      {
+        "Find": "ｓ",
+        "Replace": "s"
+      },
+      {
+        "Find": "ｔ",
+        "Replace": "t"
+      },
+      {
+        "Find": "ｕ",
+        "Replace": "u"
+      },
+      {
+        "Find": "ｖ",
+        "Replace": "v"
+      },
+      {
+        "Find": "ｗ",
+        "Replace": "w"
+      },
+      {
+        "Find": "ｘ",
+        "Replace": "x"
+      },
+      {
+        "Find": "ｙ",
+        "Replace": "y"
+      },
+      {
+        "Find": "ｚ",
+        "Replace": "z"
+      },
+      {
+        "Find": "０",
+        "Replace": "0"
+      },
+      {
+        "Find": "１",
+        "Replace": "1"
+      },
+      {
+        "Find": "２",
+        "Replace": "2"
+      },
+      {
+        "Find": "３",
+        "Replace": "3"
+      },
+      {
+        "Find": "４",
+        "Replace": "4"
+      },
+      {
+        "Find": "５",
+        "Replace": "5"
+      },
+      {
+        "Find": "６",
+        "Replace": "6"
+      },
+      {
+        "Find": "７",
+        "Replace": "7"
+      },
+      {
+        "Find": "８",
+        "Replace": "8"
+      },
+      {
+        "Find": "９",
+        "Replace": "9"
+      }
+    ]
+  }
+]

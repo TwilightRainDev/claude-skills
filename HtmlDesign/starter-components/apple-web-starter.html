@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apple Web Starter —— 起步页面</title>
+
+<!--
+  [NOTE] 这是什么
+  mode: web（apple.com 官网视觉）的起步页面。整页按真实的瓦片节奏排布，
+  不是一个组件色板 —— 节奏本身就是这套语言里最难的部分。
+
+  [NOTE] 怎么用
+  1. 把本文件 cp 进 designs/<project>/ 再改，不要从零手搓。
+  2. 两处相对路径要按你的实际位置改：<head> 里的 token 样式表 <link>，
+     以及文件末尾的 image-slot 组件 <script>。或者干脆把
+     apple/web-tokens.css 的内容整段贴进 <style>，制成单文件。
+  3. 组件用 HTML 注释标了名（[COMPONENT: xxx]），按名找、按块拷。
+  4. 交付前过 apple/checklist.md。
+
+  [NOTE] 纪律
+  - 本文件里所有颜色/字号/间距/圆角一律走 var(--*)，没有裸 hex。
+    照抄时保持这条，否则数值会漂移。
+  - 全系统只有一处投影，只给产品渲染图。卡片、按钮、文字上都没有阴影。
+  - 没有装饰性渐变。
+
+  [NOTE] 影像
+  本页用虚线占位块代替产品图，刻意不生成假产品图 —— AI 合成的人造产品
+  渲染图会立刻摧毁这套语言的可信度，占位优于糟糕的合成。
+  替换顺序：用户真实产品图 > generate-images.md 生成 > image-slot.js 占位。
+-->
+
+<link rel="stylesheet" href="../apple/web-tokens.css">
+
+<style>
+  /* ---------- 本文件补充的组件样式（tokens 文件里没有的部分） ---------- */
+
+  /* [COMPONENT: global-nav] 全局导航 —— 超细黑条，全站唯一出现纯黑的地方 */
+  .global-nav {
+    height: var(--nav-global-height);
+    background: var(--surface-black);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-lg);
+    position: sticky;
+    top: 0;
+    z-index: 300;
+  }
+  .global-nav__links {
+    display: flex;
+    gap: var(--space-lg);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .global-nav a {
+    color: var(--body-on-dark);
+    font-size: var(--text-fine-print);
+    line-height: var(--lh-fine-print);
+    letter-spacing: var(--ls-fine-print);
+    text-decoration: none;
+  }
+  .global-nav__actions { display: flex; gap: var(--space-xs); align-items: center; }
+  @media (max-width: 833px) {
+    .global-nav__links { display: none; }
+  }
+
+  /* [COMPONENT: sub-nav-frosted] 子导航 —— 米白 80% + 背景模糊 */
+  .sub-nav {
+    height: var(--nav-sub-height);
+    background: var(--material-parchment);
+    backdrop-filter: var(--blur-material);
+    -webkit-backdrop-filter: var(--blur-material);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-lg);
+    position: sticky;
+    top: var(--nav-global-height);
+    z-index: 200;
+    border-bottom: 1px solid var(--divider-soft);
+  }
+  .sub-nav__title {
+    font-family: var(--font-display);
+    font-size: var(--text-tagline);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-tagline);
+    letter-spacing: var(--ls-tagline);
+  }
+  .sub-nav__links { display: flex; align-items: center; gap: var(--space-lg); }
+  .sub-nav__links a {
+    color: var(--ink);
+    font-size: var(--text-caption);
+    letter-spacing: var(--ls-caption);
+    text-decoration: none;
+  }
+
+  /* ---------- [COMPONENT: button-*] 按钮族 ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-text);
+    text-decoration: none;
+    transition: transform var(--duration-press) var(--ease-out);
+  }
+  /* 主按钮 —— 全药丸圆角本身就是品牌动作信号 */
+  .btn--primary {
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: var(--text-body);
+    line-height: 1;
+    border-radius: var(--rounded-pill);
+    padding: 11px 22px;
+  }
+  /* 次级药丸 —— 两枚蓝 CTA 并排时的第二枚 */
+  .btn--ghost {
+    background: transparent;
+    color: var(--primary);
+    font-size: var(--text-body);
+    line-height: 1;
+    border: 1px solid var(--primary);
+    border-radius: var(--rounded-pill);
+    padding: 11px 22px;
+  }
+  /* 深色工具按钮 —— 全局导航动作 */
+  .btn--utility {
+    background: var(--ink);
+    color: var(--body-on-dark);
+    font-size: var(--text-caption);
+    line-height: var(--lh-caption-strong);
+    letter-spacing: var(--ls-caption);
+    border-radius: var(--rounded-sm);
+    padding: 8px 15px;
+    min-height: 0;
+  }
+  /* 商店主视觉 CTA —— 仅此一处用 300 字重 */
+  .btn--store {
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: var(--text-button-large);
+    font-weight: var(--fw-light);
+    line-height: 1;
+    border-radius: var(--rounded-pill);
+    padding: 14px 28px;
+  }
+  /* 圆形图标按钮 —— 浮在照片上 */
+  .btn--icon {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    padding: 0;
+    background: var(--surface-chip-translucent);
+    color: var(--ink);
+    border-radius: var(--rounded-pill);
+  }
+  .btn:active { transform: scale(0.95); }
+  .btn--primary:focus-visible,
+  .btn--ghost:focus-visible {
+    outline: 2px solid var(--primary-focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------- [COMPONENT: product-tile-*] 瓦片 ---------- */
+  .tile {
+    padding: var(--space-section) var(--space-lg);
+    text-align: center;
+    /* 瓦片之间 0 间隔：颜色变化本身就是分隔线，不要加边框或间距 */
+  }
+  .tile--light { background: var(--canvas); color: var(--ink); }
+  .tile--parchment { background: var(--canvas-parchment); color: var(--ink); }
+  .tile--dark { background: var(--surface-tile-1); color: var(--body-on-dark); }
+  .tile--dark-2 { background: var(--surface-tile-2); color: var(--body-on-dark); }
+  .tile__headline {
+    font-family: var(--font-display);
+    font-size: var(--text-display-lg);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-display-lg);
+    letter-spacing: var(--ls-display-lg);
+    margin: 0 0 var(--space-sm);
+  }
+  .tile__tagline {
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-weight: var(--fw-regular);
+    line-height: var(--lh-lead);
+    letter-spacing: var(--ls-lead);
+    margin: 0 0 var(--space-lg);
+  }
+  .tile--dark .tile__tagline { color: var(--body-muted); }
+  .tile__ctas { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; }
+  /* 暗瓦片上的正文内链接用 Sky Link Blue */
+  .tile--dark a { color: var(--primary-on-dark); }
+
+  /* [COMPONENT: hero-display] 主视觉标题 —— 负字距是"Apple 紧"的来源 */
+  .hero-headline {
+    font-family: var(--font-display);
+    font-size: var(--text-hero-display);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-hero-display);
+    letter-spacing: var(--ls-hero-display);
+    margin: 0 0 var(--space-sm);
+  }
+  @media (max-width: 1068px) { .hero-headline { font-size: var(--text-display-lg); } }
+  @media (max-width: 640px)  { .hero-headline { font-size: var(--text-hero-sm); } }
+  @media (max-width: 419px)  { .hero-headline { font-size: var(--text-hero-xs); } }
+
+  /* [COMPONENT: product-render] 产品渲染图槽位
+     用 <image-slot> 承担 —— 用户把真实产品图直接拖进槽位，经 sidecar 持久化。
+     组件内部走 Shadow DOM 自管样式，外部只控制这个盒子的尺寸与布局。
+     全系统唯一一处投影属于这里。 */
+  .render-slot {
+    display: block;
+    width: min(680px, 80%);
+    aspect-ratio: 4 / 3;
+    margin: var(--space-xxl) auto 0;
+  }
+  /* 槽位填入的是带透明背景的真产品渲染图时，加上这处唯一投影： */
+  .render-slot--real { box-shadow: var(--shadow-product); }
+
+  /* [COMPONENT: store-utility-card] 商店工具卡 */
+  .store-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-lg); /* 规范给的栅格间距区间是 20–24px，取 token 化的 24 */
+    max-width: var(--container-max);
+    margin: 0 auto;
+  }
+  @media (max-width: 1068px) { .store-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 833px)  { .store-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px)  { .store-grid { grid-template-columns: 1fr; } }
+
+  .store-card {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--rounded-lg);
+    padding: var(--space-lg);
+    text-align: left;
+  }
+  .store-card__thumb {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--rounded-sm);
+    background: var(--canvas-parchment);
+    border: 1px dashed var(--hairline);
+    margin-bottom: var(--space-lg);
+    display: grid;
+    place-items: center;
+    color: var(--ink-muted-48);
+    font-size: var(--text-fine-print);
+  }
+  .store-card__name {
+    font-size: var(--text-body);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-body-strong);
+    letter-spacing: var(--ls-body);
+    margin: 0;
+  }
+  .store-card__price {
+    font-size: var(--text-body);
+    line-height: var(--lh-body);
+    letter-spacing: var(--ls-body);
+    margin: var(--space-xxs) 0 var(--space-xs);
+  }
+  .store-card__link { color: var(--primary); font-size: var(--text-body); }
+
+  /* [COMPONENT: configurator-option-chip] 配置器选项 chip */
+  .chips { display: flex; gap: var(--space-xs); flex-wrap: wrap; justify-content: center; }
+  .chip {
+    background: var(--canvas);
+    color: var(--ink);
+    border: 1px solid var(--hairline);
+    border-radius: var(--rounded-pill);
+    padding: 12px 16px;
+    font-size: var(--text-caption);
+    letter-spacing: var(--ls-caption);
+    cursor: pointer;
+    min-height: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+  }
+  .chip[aria-pressed="true"] { border: 2px solid var(--primary-focus); }
+
+  /* [COMPONENT: search-input] 搜索框 —— 也是药丸，与 CTA 语法一致 */
+  .search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--canvas);
+    border: 1px solid var(--divider-soft);
+    border-radius: var(--rounded-pill);
+    padding: var(--space-sm) 20px; /* 20px 横向内缩取自规范，token 集未覆盖 */
+    height: var(--touch-target-min);
+    max-width: 420px;
+    margin: var(--space-lg) auto 0;
+  }
+  .search input {
+    border: none;
+    outline: none;
+    font-family: var(--font-text);
+    font-size: var(--text-body);
+    letter-spacing: var(--ls-body);
+    width: 100%;
+    background: transparent;
+    color: var(--ink);
+  }
+
+  /* [COMPONENT: footer] 页脚 —— 全站唯一刻意加密的区域 */
+  .site-footer {
+    background: var(--canvas-parchment);
+    color: var(--ink-muted-80);
+    padding: var(--space-2xl) var(--space-lg);
+  }
+  .site-footer__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-lg);
+    max-width: var(--container-max);
+    margin: 0 auto var(--space-xl);
+  }
+  .site-footer h2 {
+    font-size: var(--text-caption);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-caption);
+    margin: 0 0 var(--space-xs);
+  }
+  .site-footer ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* 密集链接列的宽松行高 2.41 是特性不是 bug */
+    font-size: var(--text-body);
+    line-height: var(--lh-dense-link);
+  }
+  .site-footer a { color: var(--ink-muted-80); text-decoration: none; }
+  .site-footer__legal {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--hairline);
+    font-size: var(--text-fine-print);
+    letter-spacing: var(--ls-fine-print);
+    color: var(--ink-muted-48);
+  }
+  .site-footer__legal a { color: var(--primary); }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: var(--text-display-md);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-display-md);
+    margin: 0 0 var(--space-lg);
+    text-align: center;
+  }
+
+  /* 无障碍：视觉隐藏但屏幕阅读器可读 */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     [COMPONENT: global-nav] 全局导航
+     纯黑底 / 44px 高 / 12px 文字；右侧簇常驻搜索与购物袋。
+     ≤833px 折叠为汉堡（本示例直接隐藏链接行）。
+     ============================================================ -->
+<header class="global-nav">
+  <nav aria-label="全局导航">
+    <ul class="global-nav__links">
+      <li><a href="#">商店</a></li>
+      <li><a href="#">Mac</a></li>
+      <li><a href="#">iPad</a></li>
+      <li><a href="#">iPhone</a></li>
+      <li><a href="#">Watch</a></li>
+      <li><a href="#">技术支持</a></li>
+    </ul>
+  </nav>
+  <div class="global-nav__actions">
+    <a class="btn btn--utility" href="#">登录</a>
+    <a class="btn btn--utility" href="#">购物袋</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     [COMPONENT: sub-nav-frosted] 子导航
+     米白 80% + backdrop-filter，内容在其下滚动。
+     ============================================================ -->
+<nav class="sub-nav" aria-label="产品导航">
+  <span class="sub-nav__title">iPhone</span>
+  <div class="sub-nav__links">
+    <a href="#">概览</a>
+    <a href="#">技术规格</a>
+    <a class="btn btn--primary" href="#">购买</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ==========================================================
+       [COMPONENT: product-tile-hero] 主视觉瓦片（白色）
+       居中堆叠：主视觉标题 → 一行副标 → 两枚蓝色药丸 CTA → 产品图
+       瓦片纵向内边距 80px，标题上方至少 64px 空气。
+       ========================================================== -->
+  <section class="tile tile--light">
+    <h1 class="hero-headline">iPhone 17 Pro</h1>
+    <p class="tile__tagline">强得很克制。</p>
+    <div class="tile__ctas">
+      <a class="btn btn--primary" href="#">了解更多</a>
+      <a class="btn btn--ghost" href="#">购买</a>
+    </div>
+    <!-- [COMPONENT: product-render] 产品渲染图槽位 —— 全系统唯一的投影位置。
+         用户可直接把带透明的产品渲染图拖进槽位，填充结果持久化。 -->
+    <image-slot class="render-slot" id="hero-render" shape="rect" fit="contain"
+                placeholder="拖入产品渲染图（4:3，带透明 PNG）"></image-slot>
+  </section>
+
+  <!-- ==========================================================
+       [COMPONENT: product-tile-dark] 暗瓦片
+       颜色变化本身就是分隔线 —— 瓦片之间没有间距、没有边框。
+       暗面上的正文内链接改用 Sky Link Blue。
+       ========================================================== -->
+  <section class="tile tile--dark">
+    <h2 class="tile__headline">A19 Pro 芯片</h2>
+    <p class="tile__tagline">每一瓦特都算数。</p>
+    <div class="tile__ctas">
+      <a class="btn btn--primary" href="#">了解更多</a>
+    </div>
+    <image-slot class="render-slot" id="dark-render" shape="rect" fit="contain"
+                placeholder="拖入产品渲染图"></image-slot>
+  </section>
+
+  <!-- [COMPONENT: product-tile-dark-2] 微亮一档的暗瓦片，制造极淡分隔 -->
+  <section class="tile tile--dark-2">
+    <h2 class="tile__headline">相机系统</h2>
+    <p class="tile__tagline">随手一拍，皆是作品。详见<a href="#">影像技术</a>。</p>
+  </section>
+
+  <!-- ==========================================================
+       [COMPONENT: product-tile-parchment] 米白瓦片
+       用来打断两片连续白瓦片，制造节奏。
+       ========================================================== -->
+  <section class="tile tile--parchment">
+    <h2 class="section-title">选购配件</h2>
+
+    <!-- [COMPONENT: search-input] -->
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <label for="acc-search" class="sr-only">搜索配件</label>
+      <input id="acc-search" type="search" placeholder="搜索配件">
+    </div>
+
+    <!-- ========================================================
+         [COMPONENT: store-utility-card] 商店工具卡栅格
+         1px 发丝线边框 / 18px 圆角 / 24px 内边距 / 默认无阴影。
+         ======================================================== -->
+    <div class="store-grid" style="margin-top: var(--space-xxl);">
+      <article class="store-card">
+        <div class="store-card__thumb">1:1 方裁</div>
+        <h3 class="store-card__name">MagSafe 保护壳</h3>
+        <p class="store-card__price">￥399</p>
+        <a class="store-card__link" href="#">购买</a>
+      </article>
+      <article class="store-card">
+        <div class="store-card__thumb">1:1 方裁</div>
+        <h3 class="store-card__name">AirPods Pro</h3>
+        <p class="store-card__price">￥1,899</p>
+        <a class="store-card__link" href="#">购买</a>
+      </article>
+      <article class="store-card">
+        <div class="store-card__thumb">1:1 方裁</div>
+        <h3 class="store-card__name">Apple Watch 表带</h3>
+        <p class="store-card__price">￥399</p>
+        <a class="store-card__link" href="#">购买</a>
+      </article>
+      <article class="store-card">
+        <div class="store-card__thumb">1:1 方裁</div>
+        <h3 class="store-card__name">USB-C 电源适配器</h3>
+        <p class="store-card__price">￥149</p>
+        <a class="store-card__link" href="#">购买</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       [COMPONENT: configurator-option-chip] 配置器选项
+       药丸形可点单元；选中态边框升级为 2px focus 蓝。
+       ========================================================== -->
+  <section class="tile tile--light">
+    <h2 class="section-title">选择容量</h2>
+    <div class="chips" role="group" aria-label="容量选项">
+      <button class="chip" type="button" aria-pressed="false">256GB</button>
+      <button class="chip" type="button" aria-pressed="true">512GB</button>
+      <button class="chip" type="button" aria-pressed="false">1TB</button>
+      <button class="chip" type="button" aria-pressed="false">2TB</button>
+    </div>
+    <div class="tile__ctas" style="margin-top: var(--space-xl);">
+      <a class="btn btn--store" href="#">加入购物袋</a>
+      <button class="btn btn--icon" type="button" aria-label="收藏">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M9 15.5S2.5 11.6 2.5 7.3A3.3 3.3 0 019 5.4a3.3 3.3 0 016.5 1.9C15.5 11.6 9 15.5 9 15.5z"
+                stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     [COMPONENT: footer] 页脚
+     米白底；密集链接列用 2.41 行高；法务行 12px。
+     这是全站唯一刻意加密的区域。
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="site-footer__cols">
+    <section>
+      <h2>选购及了解</h2>
+      <ul>
+        <li><a href="#">商店</a></li>
+        <li><a href="#">Mac</a></li>
+        <li><a href="#">iPad</a></li>
+      </ul>
+    </section>
+    <section>
+      <h2>账户</h2>
+      <ul>
+        <li><a href="#">管理你的 Apple 账户</a></li>
+        <li><a href="#">Apple Store 账户</a></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Apple Store</h2>
+      <ul>
+        <li><a href="#">查找零售店</a></li>
+        <li><a href="#">Genius Bar</a></li>
+      </ul>
+    </section>
+  </div>
+  <p class="site-footer__legal">
+    更多选购方式：<a href="#">查找你附近的 Apple Store 零售店</a>，或致电 400-666-8800。
+  </p>
+</footer>
+
+<!-- [NOTE] <image-slot> 组件（产品渲染图槽位用）。
+     cp 进项目时这个相对路径也要改对。
+     组件约束：使用它的 HTML 需与被写入的 .image-slots.state.json 同处项目根目录
+     （宿主只允许在项目根写 sidecar）。宿主运行时之外槽位为只读。 -->
+<script src="image-slot.js"></script>
+
+</body>
+</html>

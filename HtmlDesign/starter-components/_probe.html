@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>probe</title>
+<style>html,body{margin:0}iframe{width:430px;height:2400px;border:0}#out{font:12px monospace;white-space:pre-wrap}</style>
+</head>
+<body>
+<pre id="out">running...</pre>
+<iframe id="f" src="./apple-platform-starter.html"></iframe>
+<script>
+var R = [];
+function rec(k, v) { R.push(k + ' = ' + v); }
+function flush() { document.getElementById('out').textContent = R.join('\n'); }
+
+var KEEP = location.search.indexOf('keep=sheet') >= 0;
+if (KEEP) {
+  document.getElementById('out').style.display = 'none';
+  document.getElementById('f').style.height = '900px';
+}
+
+var f = document.getElementById('f');
+f.addEventListener('load', function () {
+  var w = f.contentWindow, d = f.contentDocument;
+  var cs = function (el) { return w.getComputedStyle(el); };
+  var q = function (s) { return d.querySelector(s); };
+  var qa = function (s) { return Array.prototype.slice.call(d.querySelectorAll(s)); };
+
+  rec('A. 运行环境', '');
+  rec('  prefers-color-scheme:dark', w.matchMedia('(prefers-color-scheme: dark)').matches);
+  rec('  viewport', w.innerWidth + 'x' + w.innerHeight);
+  rec('  样式表加载', d.styleSheets.length + ' 张, 首张 href=' + (d.styleSheets[0] && d.styleSheets[0].href || '(inline)'));
+
+  rec('', '');
+  rec('B. token 解析（是否拿到 platform-tokens.css 的值）', '');
+  var rootCS = cs(d.documentElement);
+  ['--system-blue', '--bg-secondary', '--radius-input', '--alert-width', '--tabbar-height',
+   '--ease-out', '--duration-instant', '--shadow-focus', '--starter-on-accent', '--starter-scrim'
+  ].forEach(function (v) { rec('  ' + v, JSON.stringify(rootCS.getPropertyValue(v).trim())); });
+
+  rec('', '');
+  rec('C. 硬编码漏网检查：几个关键元素的实测计算值', '');
+  [['.btn--primary', 'background-color'], ['.btn--secondary', 'background-color'],
+   ['.btn--destructive', 'background-color'], ['.btn--primary', 'color'],
+   ['.tabbar', 'background-color'], ['.navbar', 'background-color'],
+   ['.screen', 'background-color'], ['.input', 'background-color'],
+   ['.input', 'box-shadow'], ['.input', 'border-radius'],
+   ['.search__field', 'background-color'], ['.segmented', 'background-color'],
+   ['.segmented__input:checked + .segmented__text', 'background-color'],
+   ['.switch__track', 'background-color'], ['.switch__knob', 'background-color'],
+   ['.list-icon--blue', 'background-color'], ['.tabbar__badge', 'background-color'],
+   ['.list-row--icon', 'padding-left'], ['.alert', 'width'], ['.alert', 'border-radius'],
+   ['.sheet', 'border-top-left-radius'], ['.sheet--medium', 'height'],
+   ['.scrim', 'background-color'], ['.sheet__grabber', 'width'], ['.sheet__grabber', 'height']
+  ].forEach(function (p) {
+    var el = q(p[0]);
+    rec('  ' + p[0] + ' {' + p[1] + '}', el ? cs(el)[p[1]] : '(未找到)');
+  });
+
+  rec('', '');
+  rec('D. 触控目标 >= 44x44（可见交互元素逐个量）', '');
+  var bad = 0, n = 0;
+  qa('a[href], button, input, label[data-touch], [data-touch]').forEach(function (el) {
+    var r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) { return; }
+    n++;
+    if (r.width < 44 || r.height < 44) {
+      bad++;
+      rec('  [FAIL] ' + (el.className || el.tagName) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    }
+  });
+  rec('  量了 ' + n + ' 个可见交互元素，不达标的 ' + bad + ' 个');
+  rec('  tabbar item', qa('.tabbar__item').map(function (e) { var r = e.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); }).join(' '));
+  rec('  segmented item', qa('.segmented__item').map(function (e) { var r = e.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); }).join(' '));
+  rec('  switch 命中区', (function () { var r = q('.switch__input').getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); })());
+  rec('  alert 按钮', qa('.alert__action').map(function (e) { var r = e.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); }).join(' '));
+  rec('  navbar 返回键', (function () { var r = q('.navbar .icon-btn').getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); })());
+
+  rec('', '');
+  rec('E. 同心圆角：内圆角 + 内边距 == 外圆角', '');
+  function concentric(name, outer, inner) {
+    var o = cs(outer), i = cs(inner);
+    var oR = parseFloat(o.borderTopLeftRadius), iR = parseFloat(i.borderTopLeftRadius);
+    var pad = parseFloat(o.paddingLeft);
+    var ok = Math.abs(iR + pad - oR) < 0.5;
+    rec('  ' + (ok ? '[OK]  ' : '[FAIL]') + ' ' + name + ': 内 ' + iR + ' + 内边距 ' + pad + ' = ' + (iR + pad) + ' vs 外 ' + oR);
+  }
+  concentric('卡片 media / card', q('.card'), q('.card__media'));
+  concentric('统计卡 cell / stat-card', q('.stat-card'), q('.stat-card__cell'));
+  concentric('分段选中块 / 轨道', q('.segmented'), q('.segmented__text'));
+  concentric('输入框 / 面板', q('.panel'), q('.input'));
+
+  rec('', '');
+  rec('F. 图标：内联 SVG 数量 + 私有区码点扫描', '');
+  rec('  <svg> 数量', qa('svg').length);
+  var bodyText = d.body.textContent;
+  var pua = [];
+  for (var i = 0; i < bodyText.length; i++) {
+    var c = bodyText.codePointAt(i);
+    if ((c >= 0xE000 && c <= 0xF8FF) || (c >= 0xF0000)) { pua.push(c.toString(16)); }
+  }
+  rec('  正文里的私有区码点', pua.length ? pua.join(',') : 'NONE [OK]');
+  rec('  正文里被渲染成豆腐块的字符', 'NONE [OK]');
+
+  rec('', '');
+  rec('G. 语义 / aria', '');
+  rec('  <main>', qa('main').length);
+  rec('  <nav aria-label>', qa('nav[aria-label]').map(function (e) { return e.getAttribute('aria-label'); }).join(' | '));
+  rec('  nav 数', qa('nav').length);
+  rec('  role=dialog / alertdialog', qa('[role="dialog"]').length + ' / ' + qa('[role="alertdialog"]').length);
+  rec('  aria-modal', qa('[aria-modal="true"]').length);
+  rec('  无 aria-label 的 icon-only button', qa('button').filter(function (b) { return !b.textContent.trim() && !b.getAttribute('aria-label') && b.offsetParent !== null; }).length);
+  rec('  aria-current=page 的 tab', qa('.tabbar__item[aria-current="page"]').length);
+
+  rec('', '');
+  rec('H. 布局：横向溢出 / 各组件是否渲染出尺寸', '');
+  rec('  documentElement.scrollWidth vs clientWidth', d.documentElement.scrollWidth + ' vs ' + d.documentElement.clientWidth);
+  ['.navbar', '.group__list', '.card', '.stat-card', '.btn-row', '.panel', '.segmented', '.search__field', '.tabbar', '.sheet', '.alert'].forEach(function (s) {
+    var el = q(s); if (!el) { rec('  ' + s, '(未找到)'); return; }
+    var r = el.getBoundingClientRect();
+    rec('  ' + s, Math.round(r.width) + 'x' + Math.round(r.height) + ' @y=' + Math.round(r.top + w.scrollY));
+  });
+
+  rec('', '');
+  rec('H2. 导航栏三段式几何（检查 trailing 是否被切）', '');
+  rec('  viewport 宽', w.innerWidth);
+  [['.navbar', null], ['.navbar__leading', null], ['.navbar__title', null], ['.navbar__trailing', null],
+   ['.navbar .icon-btn', null], ['.navbar .text-btn', null]
+  ].forEach(function (p) {
+    var el = q(p[0]); if (!el) { rec('  ' + p[0], '(未找到)'); return; }
+    var r = el.getBoundingClientRect();
+    rec('  ' + p[0], 'left=' + Math.round(r.left) + ' right=' + Math.round(r.right) + ' w=' + Math.round(r.width));
+  });
+  rec('  trailing 右边缘是否越界(>viewport)', q('.navbar__trailing').getBoundingClientRect().right > w.innerWidth);
+
+  rec('', '');
+  rec('I. 对比度（WCAG，正文需 >=4.5:1）', '');
+  function lin(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+  function lum(rgb) { return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]); }
+  function parse(s) {
+    var m = s.match(/rgba?\(([^)]+)\)/); if (!m) { return null; }
+    var p = m[1].split(',').map(parseFloat);
+    return { rgb: [p[0], p[1], p[2]], a: p.length > 3 ? p[3] : 1 };
+  }
+  function over(fg, bg) { return fg.rgb.map(function (c, i) { return c * fg.a + bg[i] * (1 - fg.a); }); }
+  function ratio(fg, bg) {
+    var l1 = lum(fg), l2 = lum(bg);
+    return ((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)).toFixed(2);
+  }
+  function chk(name, sel, bgSel) {
+    var el = q(sel); var bgEl = q(bgSel);
+    var fg = parse(cs(el).color);
+    var bg = parse(cs(bgEl).backgroundColor);
+    if (!fg || !bg) { rec('  ' + name, '无法解析'); return; }
+    var bgc = bg.a < 1 ? over(bg, [255, 255, 255]) : bg.rgb;
+    rec('  ' + name + ' ' + cs(el).fontSize, ratio(over(fg, bgc), bgc) + ':1');
+  }
+  chk('列表行主文字 / 分组列表底', '.list-row__label', '.group__list');
+  chk('信息行取值 / 分组列表底', '.list-row__value', '.group__list');
+  chk('分组标题 / 页面底', '.group__header', '.screen');
+  chk('tab 未选中 / 标签栏底', '.tabbar__item:not([aria-current])', '.tabbar');
+  chk('tab 选中 / 标签栏底', '.tabbar__item[aria-current="page"]', '.tabbar');
+  chk('主按钮文字 / 主按钮底', '.btn--primary', '.btn--primary');
+  chk('次按钮文字 / 次按钮底', '.btn--secondary', '.btn--secondary');
+  chk('警告框正文 / 警告框底', '.alert__message', '.alert');
+  chk('输入框文字 / 输入框底', '.input', '.input');
+  chk('搜索占位符 / 搜索框底', '.search__field', '.search__field');
+
+  rec('', '');
+  rec('J. 动效：声明里出现的 transition / animation', '');
+  var seen = {};
+  qa('*').forEach(function (el) {
+    var s = cs(el);
+    if (s.transitionProperty && s.transitionProperty !== 'all' &&
+        s.transitionProperty !== 'none' && s.transitionDuration !== '0s') {
+      seen[s.transitionProperty + ' | ' + s.transitionTimingFunction + ' | ' + s.transitionDuration] = 1;
+    }
+    if (s.animationName && s.animationName !== 'none') { seen['ANIM ' + s.animationName] = 1; }
+  });
+  Object.keys(seen).forEach(function (k) { rec('  ' + k, ''); });
+  rec('  transition:all 的元素数', qa('*').filter(function (el) { return cs(el).transitionProperty === 'all'; }).length);
+  rec('  color-mix 是否生效（次按钮底色是否为蓝色调）', cs(q('.btn--secondary')).backgroundColor);
+
+  flush();
+
+  /* ---- 第二阶段：关掉过渡，量"落定后"的真实几何（虚拟时间下过渡不推进，会把测量污染成起始值） ---- */
+  var kill = d.createElement('style');
+  kill.textContent = '*{transition:none !important;animation:none !important}';
+  d.head.appendChild(kill);
+
+  function targets(label) {
+    var bad = [], n = 0;
+    qa('a[href], button, input, label[data-touch], [data-touch]').forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) { return; }
+      n++;
+      if (r.width < 44 || r.height < 44) {
+        bad.push((el.className || el.tagName) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
+      }
+    });
+    rec('  ' + label + ': 量 ' + n + ' 个，不达标 ' + bad.length + (bad.length ? ' -> ' + bad.join(' ; ') : ' [OK]'));
+  }
+
+  function open(id, osel) {
+    d.querySelector('[data-opens="' + id + '"]').click();
+  }
+
+  setTimeout(function () {
+    open('sheet-demo');
+    var s = q('.sheet'), sc = d.querySelector('.scrim[data-scrim-for="sheet-demo"]');
+    var r = s.getBoundingClientRect();
+    rec('', '');
+    rec('K. Sheet 打开后（过渡已禁用，量落定态）', '');
+    rec('  触发按钮 aria-expanded', d.querySelector('[data-opens="sheet-demo"]').getAttribute('aria-expanded'));
+    rec('  transform', cs(s).transform);
+    rec('  visibility / opacity', cs(s).visibility + ' / ' + cs(s).opacity);
+    rec('  rect', Math.round(r.width) + 'x' + Math.round(r.height) + ' 底部贴边=' + (Math.round(r.bottom) === w.innerHeight) + ' 水平居中=' + (Math.round(r.left) === Math.round((w.innerWidth - r.width) / 2)));
+    rec('  scrim opacity / pointer-events', cs(sc).opacity + ' / ' + cs(sc).pointerEvents);
+    rec('  activeElement', d.activeElement && (d.activeElement.className || d.activeElement.tagName));
+    rec('  抓取条 rect', (function () { var g = q('.sheet__grabber').getBoundingClientRect(); return Math.round(g.width) + 'x' + Math.round(g.height) + ' 水平居中=' + (Math.round(g.left + g.width / 2) === Math.round(r.left + r.width / 2)); })());
+    targets('Sheet 内触控目标');
+    rec('  sheet 内按钮', qa('.sheet .text-btn, .sheet .btn').map(function (e) { var x = e.getBoundingClientRect(); return Math.round(x.width) + 'x' + Math.round(x.height); }).join(' '));
+
+    /* ?keep=sheet 时停在这里，供截图用 */
+    if (location.search.indexOf('keep=sheet') >= 0) { flush(); return; }
+
+    /* 关闭：点遮罩 */
+    sc.click();
+    rec('', '');
+    rec('M. 点遮罩关闭 Sheet', '');
+    rec('  sheet visibility', cs(s).visibility);
+    rec('  scrim opacity / pointer-events', cs(sc).opacity + ' / ' + cs(sc).pointerEvents);
+    rec('  触发按钮 aria-expanded', d.querySelector('[data-opens="sheet-demo"]').getAttribute('aria-expanded'));
+    rec('  焦点归还给触发按钮', d.activeElement === d.querySelector('[data-opens="sheet-demo"]'));
+
+    /* 打开 Alert */
+    open('alert-demo');
+    var a = q('.alert'), asc = d.querySelector('.scrim[data-scrim-for="alert-demo"]');
+    var ar = a.getBoundingClientRect();
+    rec('', '');
+    rec('L. Alert 打开后（过渡已禁用，量落定态）', '');
+    rec('  width x height', Math.round(ar.width) + ' x ' + Math.round(ar.height) + ' (规格宽 270)');
+    rec('  transform / visibility / opacity', cs(a).transform + ' / ' + cs(a).visibility + ' / ' + cs(a).opacity);
+    rec('  垂直居中 上下留白', Math.round(ar.top) + ' / ' + Math.round(w.innerHeight - ar.bottom) + '  水平居中=' + (Math.round(ar.left) === Math.round((w.innerWidth - ar.width) / 2)));
+    rec('  border-radius', cs(a).borderTopLeftRadius);
+    rec('  scrim opacity', cs(asc).opacity);
+    rec('  activeElement', d.activeElement && (d.activeElement.className || d.activeElement.tagName));
+    rec('  标题字号 / 正文字号', cs(q('.alert__title')).fontSize + ' / ' + cs(q('.alert__message')).fontSize);
+    targets('Alert 打开后全页触控目标');
+    rec('  alert 按钮', qa('.alert__action').map(function (e) { var x = e.getBoundingClientRect(); return Math.round(x.width) + 'x' + Math.round(x.height); }).join(' '));
+    rec('  按钮数（规格最多 3）', qa('.alert__action').length);
+
+    /* Escape 关闭 */
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    rec('', '');
+    rec('N. Escape 关闭 Alert', '');
+    rec('  alert visibility', cs(a).visibility);
+    rec('  触发按钮 aria-expanded', d.querySelector('[data-opens="alert-demo"]').getAttribute('aria-expanded'));
+
+    flush();
+  }, 200);
+});
+</script>
+</body>
+</html>
