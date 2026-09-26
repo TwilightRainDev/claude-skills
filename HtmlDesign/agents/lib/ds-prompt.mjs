@@ -21,9 +21,9 @@ const SCOPE =
   'work, or the topic.';
 
 // Pinned page-scaffold tags — THIS FILE IS THE AUTHORITY for them.
-// (Formerly "keep in sync with system-prompt.md"; that upstream English prompt is no
-// longer shipped — see SKILL.md "当前不完整的部分" and references/content-craft.md.
-// The BABEL_TAG SRI below is also the checksum that verifies agents/vendor/babel.min.js.)
+// (Formerly "keep in sync with system-prompt.md"; that upstream English prompt is
+// no longer shipped. The BABEL_TAG SRI below is also the checksum that verifies
+// agents/vendor/babel.min.js.)
 // The prompt must stand alone for whoever reopens the project, so the exact tags
 // ride here rather than a pointer to the skill docs.
 const REACT_UMD_TAGS = [

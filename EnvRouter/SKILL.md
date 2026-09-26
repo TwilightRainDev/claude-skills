@@ -13,25 +13,27 @@ description: Windows 环境事实快查表与路由。遇到环境敏感任务�
 2. **按路由表** → 需要深处理时 Skill() 加载对应技能
 3. **查表未命中 / 事实存疑** → 跑最小实测命令（见“实测兜底”）确认后更新结论
 
-## 本机已知环境事实（2026-08-09 实测版）
+## 本机已知环境事实（2026-09-26 复核）
 
 - **静态项**，一次实测固化，无需重复取证。
 - **动态项**，随状态变化，任务前应实测确认。
+- **载体已消失的项直接删除**：某个环境被删除、卸载、带离后，对应条目连同它的探测命令一并从本表删除，不留「曾安装过」「已不可达」「原 X 盘」一类注记——**如同从未安装过**。本表描述的是**当下存在什么**，不是历史沿革。
+- 环境变动（装/卸工具、增删盘符、换机）后重新实测并同步本表。
 
 | 维度 | 事实 | 状态 |
 |---|---|---|
 | Shell | 会话在 Git Bash（MSYSTEM=MINGW64）或 cmd/PowerShell；`$MSYSTEM` 判语境 | 静态 |
-| Python | 裸 `python` = 官方 CPython 3.14.4（pythoncore-3.14-64，入口 `AppData\Local\Python\bin\python`）；MSYS2 的 `/d/msys64/ucrt64/bin/python`（3.14.5）在 PATH 后面。**项目依赖都在官方版，勿往 MSYS2 `pip install`** | **动态** |
+| Python | 真值：fact:machine.toolchain.python | **动态** |
 | Python 编码 | 未设 `PYTHONUTF8`，stdout 编码为 GBK/cp936 | 静态 |
-| GitHub 网络 | <LOCAL_PROXY> 为用户自装代理，劫持 github，证书验证错误为预期现象、非安全事件。**开关完全由用户决定，有时状态模糊：任何断言不可信，任务前必须实测** | **动态** |
-| <LOCAL_PROXY> 证书 | 自签 4 张 <LOCAL_PROXY> CA，在 Windows 根存储，3 张有效，至 2027/2035/2036 | 静态 |
-| git | Git for Win 2.54.0（`D:\Git\mingw64\bin\git.exe`），系统级 `http.sslbackend=schannel`（读 Windows 证书存储）配置在 `D:/Git/etc/gitconfig`；推送走 PAT + extraheader，无 gh/SSH | 静态 |
-| git 身份 | `user.name=<account-login>`，`user.email` 为 noreply 邮箱 | 静态 |
-| 文件系统 | H 盘 exFAT：无 ACL、无大小写敏感、git multi-pack-index 类操作可能失败 | 静态 |
-| 开发工具链 | 一律关注 D 盘。无全局 JAVA_HOME。 | 静态 |
-| 无头验证工具 | puppeteer-core `<VERIFY_TOOLS_DIR>`，node 包根 + verify.js 通用脚本 + Edge。<WORKSPACE>\Tools 仅存旧工具不新增 | 静态 |
-| 行尾 | 工作区约定一律 LF；`core.autocrlf` 应为 false/input | 静态 |
-| 路径约定 | Obsidian 仓库 `<OBSIDIAN_VAULT>`（Git Bash 格式）；**勿用** `/mnt/`（WSL 格式） | 静态 |
+| GitHub 网络 | 真值：fact:github.network-diagnostics 。开关由用户决定，任务前实测，任何断言不可信 | **动态** |
+| <LOCAL_PROXY> 证书 | 真值：fact:github.network-diagnostics | 静态 |
+| git | 真值：fact:machine.git.install | 静态 |
+| git 身份 | 真值：fact:github.identity | 静态 |
+| 开发工具链 | 真值：fact:machine.drives | 静态 |
+| 无头验证工具 | 真值：fact:tooling.host-capabilities 。个人库归属见 fact:workspace.tools-ownership | 静态 |
+| 行尾 | 真值：fact:machine.text-eol | 静态 |
+| 盘符 | 真值：fact:machine.drives | 动态 |
+| 路径约定 | 用 Git Bash 格式（`D:/`）；**勿用** `/mnt/`（WSL 格式） | 静态 |
 
 **证书报错分诊**（按报错原文）：
 - “unable to get local issuer certificate” / “self-signed certificate” → 客户端走 OpenSSL 而非 schannel（WSL/MSYS2 git/IDE 内置 git/其他 git 安装）——补信任 <LOCAL_PROXY> CA 或 `git config http.sslbackend schannel`
@@ -42,19 +44,36 @@ description: Windows 环境事实快查表与路由。遇到环境敏感任务�
 
 | 症状 | 处理 |
 |---|---|
+| **命令没报错，但结果可疑**（筛选器疑似没生效、条数不对、行尾/编码存疑） | 先取证再判断，见下「静默失效」 |
+| **批量删除，或任何「筛选 + 删除/移动/覆盖」组合** | 走 `<WORKSPACE>\ClaudeCode\tools\recycle-remove.ps1`（默认干跑；**`-Path` 一次只收一个字符串**，多个目标逐个调用）；`Remove-Item` **不进回收站** |
 | PowerShell 中文乱码、Out-File/heredoc/管道编码问题 | `EncodingGuide` |
 | Git 操作（含破坏性/跨平台/恢复/凭证） | `GitMaster` |
 | Git Bash 下测试失败、路径转换、MSYSTEM 相关 | `WinBashTest` |
 | 环境症状不明、需根因分诊 | `Debugging` |
 | 环境配置收敛（settings.json/PATH/代理开关） | `ChangeClaudeConfig` |
-| Obsidian 笔记查建整理 | `ObsidianVault` |
 | 查表命中即明确 | 直接用表内事实处理，不再加载技能 |
+
+## 静默失效
+
+本机工具链有一类失败：**参数被接受但被忽略，命令成功返回，结果是错的**。没有报错、退出码为 0，唯一线索是结果本身不合理。
+
+适用判据：任何「筛选 + 删除/移动/覆盖」组合，或任何你**没有亲眼看过结果**的批量操作。
+
+取证纪律：
+
+- **先列后删**。枚举与删除分两次执行，中间核对**完整清单与条数**（不是前几条），条数符合预期才动手。
+- **不把 `Get-ChildItem` 的返回值直接接给 `Remove-Item`**。
+- **行尾/编码结论要有字节级证据**，不能凭 `grep` 或肉眼。
+- **筛选器可能静默失效**是通用假设，不限于某个具体参数。
+
+PowerShell 枚举陷阱的完整取证（10 个变体的原始实测输出）见 `<WORKSPACE>\Docs\lesson-recursive-delete-trap.md`；工作区级规则见 `CLAUDE.md` §8。此处只留路由与判据，细节不在本表重复。
 
 ## 实测兜底（只测动态项，只读命令）
 
-静态项（schannel 配置、git 版本、身份、编码现状、exFAT 等）**不重复取证**——除非出现与之矛盾的报错。只测动态项：
+静态项（schannel 配置、git 版本、身份、编码现状等）**不重复取证**——除非出现与之矛盾的报错。只测动态项：
 
 ```bash
+powershell -NoProfile -Command "Get-PSDrive -PSProvider FileSystem|% Name"  # 当前存在的卷（动态）
 echo "$MSYSTEM"                                          # Git Bash 判定
 type -a python; python -c "import sys; print(sys.executable)"  # 解释器命中顺序（动态）
 grep -n github /c/Windows/System32/drivers/etc/hosts     # <LOCAL_PROXY> 劫持条目有无（动态）
@@ -71,11 +90,14 @@ date                                                     # 系统时间（动态
 | “报证书错误就是被攻击/要修证书” | <LOCAL_PROXY> 是用户自装代理（开关由用户决定、可能忘开）。先实测当前状态与 schannel，勿动系统证书。 |
 | “我记得 python 指向 MSYS2” | 查表，存疑就实测。 |
 | “用 /mnt/d/ 格式” | WSL 格式。本机是 Git Bash，用 `D:/`。 |
+| “这条留着吧，删了以后忘了它曾经存在过” | 本表描述当下存在什么。消失的环境其条目一并消失，如同从未安装过。 |
+| “命令没报错，那就是没问题” | 本机工具链会静默忽略参数。结果可疑就先取证：数条数、看字节。 |
 | “环境问题太常见，每次都现场查” | 快查表 1 秒，现场取证 72 秒。先查表。 |
 | “这不重要，先做事” | 环境判断错了，后面的活全白干。 |
 
 ## 红线
 
+- **消失的环境 = 消失的条目**：环境被删除、卸载、带离后，其条目与探测命令一并删除，不留墓碑。本表只描述当下存在什么。
 - **快查表优先，实测兜底**：事实表命中即用；存疑才实测，实测结论以本次为准并更新认知。
 - **不把证书错误当安全事件**：<LOCAL_PROXY> 是用户自装的已知常态；其开关状态模糊，任何快查表/记忆不得断言，任务前实测。
 - **探测不改状态**：兜底命令只读；改环境先说明。

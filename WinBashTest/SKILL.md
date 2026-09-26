@@ -1,6 +1,6 @@
 ---
 name: WinBashTest
-description: Win和 Git Bash 环境下的 Vitest、Playwright 及 MSW 测试兼容性指南。
+description: Win和 Git Bash 环境下的 Vitest、Playwright 及 MSW 测试兼容性指南。含 grep -c CR 计行尾不可靠。
 ---
 
 # WinBashTest（Windows 和 Git Bash 测试兼容性）
@@ -25,6 +25,7 @@ Windows 的 Git Bash/MINGW 下测试出现路径转换、Shell 检测、启动�
 | 覆盖率/产物写到 /c/... 失败 | 配置中绝对路径 | 输出目录与 include 一律相对路径 | references/config-snippets.md |
 | 需要按环境条件设置测试 | 不知道当前 Shell | 检测 `MSYSTEM` 环境变量（最可靠） | references/shell-detection.md |
 | CI 需要多平台验证 | 单平台测试漏掉平台问题 | GitHub Actions matrix 三平台跑 | references/ci-matrix.md |
+| `grep -c $'\r'` 把 LF 文件报成每行都含 CR，或结果不稳定 | `$'\r'` 经 Git Bash 处理后不可靠 | 用 node 数字节 `13` 或 `od -c` | `fact:machine.shell.grep-cr` |
 
 ## 核心规则
 
@@ -61,6 +62,7 @@ cygpath -w "/c/path"    # Unix → Windows
 | Failed to launch browser | `unset DISPLAY` + `unset BROWSER` 后重试 |
 | Failed to write coverage to /c/project/coverage | coverage.reportsDirectory 改相对路径 |
 | Playwright 安装异常 | 优先 `npx playwright install`；必要时改用 Windows 原生命令提示符安装 |
+| `grep -c $'\r'` 误报或乱跳 | node 数字节 `13`，或 `od -c`；见 `fact:machine.shell.grep-cr` |
 
 ## References
 

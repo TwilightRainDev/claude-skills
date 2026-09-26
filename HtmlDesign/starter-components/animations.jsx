@@ -20,8 +20,8 @@
 // for tweens; TextSprite / ImageSprite / RectSprite have built-in entry/exit.
 // Build YOUR scenes by composing Sprites inside a Stage.
 //
-// Export: a Stage is recordable to a real .mp4 by gen-video (see the
-// export-as-video built-in skill). Loading the page with ?capture (or passing
+// Export: a Stage can be captured frame-by-frame by an external exporter.
+// Loading the page with ?capture (or passing
 // <Stage capture>) strips the scrubber/letterboxing and renders one exact frame
 // per seek, and the Stage registers a stable window.__animStage bridge
 // (setTime/setPlaying/duration/...) that the exporter drives frame-by-frame.
@@ -336,7 +336,7 @@ function RectSprite({
 
 // Detect capture mode: a `capture` prop, or a `?capture` URL param (the value
 // must not be "0"/"false"). In capture mode the Stage renders one exact,
-// chrome-free frame per seek so gen-video can record it.
+// chrome-free frame per seek so an external exporter can record it.
 function detectCapture(prop) {
   if (prop) return true;
   try {
@@ -407,7 +407,7 @@ function Stage({
   }, [width, height, captureMode]);
 
   // ── Capture bridge ──────────────────────────────────────────────────────
-  // Expose a stable-identity window.__animStage so the gen-video exporter can
+  // Expose a stable-identity window.__animStage so an external exporter can
   // seek/pause/measure. Dynamic values are read through a ref so the object
   // never has to be re-created. Backward-compatible with any setTime/duration
   // bridge (the exporter needs only setTime/setPlaying/duration).
@@ -529,7 +529,7 @@ function Stage({
       </div>
 
       {/* Playback bar — stacked below canvas, never overlapping. Hidden in
-          capture mode; data-stage-chrome lets gen-video's CSS fallback hide it
+          capture mode; data-stage-chrome lets an exporter's CSS fallback hide it
           on copies loaded without ?capture. */}
       {!captureMode && (
         <PlaybackBar

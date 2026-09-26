@@ -97,7 +97,6 @@ description: 任何会话与任务开始前先检查是否有适用技能，再�
 | 结构化异常工单 | `WriteIssue` |
 | 中文文本更自然像人写 | `HumanizerZh` |
 | 把任何角色蒸馏成可复用技能 | `PersonaEcho` |
-| 在 Obsidian 库中处理笔记 | `ObsidianVault` |
 
 ### 第五步：实现与构建
 

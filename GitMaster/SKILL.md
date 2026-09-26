@@ -1,6 +1,6 @@
 ---
 name: GitMaster
-description: 完整的 Git 专家知识体系，覆盖所有 Git 操作。
+description: 完整的 Git 专家知识体系，覆盖所有 Git 操作。含 git archive 行尾、exFAT 上 git gc / multi-pack-index 失败。
 ---
 
 # GitMaster（Git 精通）
@@ -90,6 +90,15 @@ Git 的行为在不同平台和托管服务商上有所不同：
 
 适用于：Edit/Write 的 `file_path` 参数及所有文件操作。
 
+### 本机陷阱（症状 → 对策）
+
+| 症状 | 对策 | 正文 |
+|------|------|------|
+| `git archive` 取出的文件是 CRLF | 取 LF 用 `git show`，或 `git -c core.autocrlf=false archive` | `fact:machine.text-eol` |
+| exFAT 卷上 `git gc` / `git maintenance` 报 `could not write multi-pack-index` | 删 `.git/objects/pack/multi-pack-index`，清无对应 `.pack` 的孤儿 `.idx`，再重跑 | `fact:machine.fs.volume-heal` |
+
+第二条不绑定盘符。本机各卷现为 NTFS，只在 exFAT 仓库上触发。
+
 ### 文档编写准则
 
 除非用户明确要求，或者已有 `docs` 文件夹，否则绝不创建新的文档文件。优先更新现有的 README.md 文件。保持文档简洁、直接、专业。
@@ -124,6 +133,7 @@ Git 的行为在不同平台和托管服务商上有所不同：
 | `.git/hooks/*`、约定式提交、SSH/GPG/密钥 | hooks-and-security |
 | 分离 HEAD、恢复分支/文件/提交、损坏的仓库 | troubleshooting-recovery |
 | `core.autocrlf`、`core.ignorecase`、`MSYS_NO_PATHCONV`、`cygpath`、`$MSYSTEM` | cross-platform |
+| `git archive` 行尾、exFAT 上 `git gc` / midx | 上表「本机陷阱」；正文 `fact:machine.text-eol`、`fact:machine.fs.volume-heal` |
 
 ## 成功标准
 

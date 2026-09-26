@@ -4,7 +4,7 @@
 // build-preview.mjs — compile a design system directory (one with
 // _ds_manifest.json and/or @dsCard-tagged .html cards) into ONE self-contained
 // interactive preview.html (no iframes). See
-// built-in-skills/design-system-preview.md for the skill doc.
+// ds/preview.md for the skill doc.
 //
 // Usage:
 //   node <skill>/agents/build-preview.mjs <design-system-dir>
@@ -315,7 +315,7 @@ function renderInline(text) {
   const codes = [];
   s = s.replace(/`([^`]+)`/g, (m, c) => {
     codes.push(c);
-    return " " + (codes.length - 1) + " ";
+    return "\u0000" + (codes.length - 1) + "\u0000";
   });
   s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, '<img alt="$1" src="$2">');
   s = s.replace(
@@ -326,7 +326,7 @@ function renderInline(text) {
   s = s.replace(/__([^_]+)__/g, "<strong>$1</strong>");
   s = s.replace(/(^|[\s(>])\*([^*\n]+)\*(?=$|[\s).,!?:;<])/g, "$1<em>$2</em>");
   s = s.replace(/~~([^~]+)~~/g, "<del>$1</del>");
-  s = s.replace(/ (\d+) /g, (m, i) => "<code>" + codes[+i] + "</code>");
+  s = s.replace(/\u0000(\d+)\u0000/g, (m, i) => "<code>" + codes[+i] + "</code>");
   return s;
 }
 

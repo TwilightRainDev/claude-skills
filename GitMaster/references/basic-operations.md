@@ -27,9 +27,8 @@ git config --global user.email "your.email@example.com"
 # Default branch name
 git config --global init.defaultBranch main
 
-# Line ending handling (Windows)
-git config --global core.autocrlf true  # Windows
-git config --global core.autocrlf input  # macOS/Linux
+# Line endings: this machine's system default vs workspace rule
+# see fact:machine.text-eol (system-level true; workspace repos use false)
 
 # Editor
 git config --global core.editor "code --wait"  # VS Code

@@ -47,7 +47,7 @@ description: 当接手或初步了解一个项目、不清楚项目是什么、�
 
 ### ③ 索引就绪
 
-项目无 `.codegraph/` → 先执行 `codegraph init`（建索引是探索的前置，秒级完成）。已建则跳过。
+项目无 `.codegraph/` → **不要自行 `codegraph init`**。Indexing 是用户决定（见 `fact:tooling.mcp.codegraph`）。已建则继续用图；未建则用文档队列探索，并告知用户可以自己决定是否建索引。
 
 ### ④ 文档读取（优先级队列，150KB 上限）
 
@@ -107,13 +107,13 @@ SCRIPT="$BASE/lib/dist/bin/codegraph.js"
 | `codegraph explore <query>` | 相关符号源码 + 调用路径 + 影响半径 |
 | `codegraph files --max-depth 2` | 文件结构，找最大模块 |
 | `codegraph callers <符号>` | 高被引用符号（影响核心的判定） |
-| `codegraph init` | 建索引（前置步骤） |
+| `codegraph init` | 建索引；**只在用户明确要求时**执行，见 `fact:tooling.mcp.codegraph` |
 
 ## 常见错误
 
 | 借口 | 现实 |
 |---|---|
-| “项目小，不用建索引” | init 秒级完成；图让后续查询精确，探索结论也有据可查 |
+| “项目小，我先建个索引” | 建索引是用户决定，见 `fact:tooling.mcp.codegraph`。未建也能先走文档队列 |
 | “只读 README 就够了” | README 说意图，图说事实——文档提的符号可能已不存在或已重构 |
 | “文档全读一遍更放心” | 150KB 上限防失控；剩余列清单，按需深入 |
 | “重新探索一次更稳” | 旧档优先 + 变化检测就是稳的；没变化重跑是浪费 |

@@ -4,16 +4,8 @@ Reference for line endings, case sensitivity, path handling, and Git Bash specif
 
 ## Line Endings
 
-```bash
-# Windows (CRLF in working directory, LF in repository)
-git config --global core.autocrlf true
-
-# macOS/Linux (LF everywhere)
-git config --global core.autocrlf input
-
-# No conversion (not recommended)
-git config --global core.autocrlf false
-```
+本机 system 级默认与工作区约定见 `fact:machine.text-eol`（system 为 true；工作区仓库用 false 覆盖）。
+不要按「Windows 就设 global true」一刀切。
 
 Use `.gitattributes` for consistency:
 

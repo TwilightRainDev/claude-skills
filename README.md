@@ -16,14 +16,13 @@ TwilightRainDev 的 Claude Code 技能（skill）聚合仓库，同时作为本�
 | [ExecutingPlans](ExecutingPlans/SKILL.md) | 有书面实施计划时：独立会话逐步执行 + 评审检查点。 |
 | [FinDevBranch](FinDevBranch/SKILL.md) | 实现完成、测试全过、合并前收尾分支时使用。 |
 | [GitHubOps](GitHubOps/SKILL.md) | 当在本机做 GitHub 平台操作（建仓/推送/发布/PR/Release）或 GitHub 通路报错（连接被拒/证书/502）时使用。 |
-| [GitMaster](GitMaster/SKILL.md) | 完整的 Git 专家知识体系，覆盖所有 Git 操作。 |
+| [GitMaster](GitMaster/SKILL.md) | 完整的 Git 专家知识体系，覆盖所有 Git 操作。含 git archive 行尾、exFAT 上 git gc / multi-pack-index 失败。 |
 | [GlossaryAndAdr](GlossaryAndAdr/SKILL.md) | 构建并完善领域模型：确定领域术语、记录架构决策。 |
 | [HandleReview](HandleReview/SKILL.md) | 收到审查反馈后、实施前：技术严谨验证，拒绝表演性赞同或盲目实施。 |
-| [HtmlDesign](HtmlDesign/SKILL.md) | 制作 Apple 风格的 HTML 制品：官网/营销页（apple.com 视觉）、仿 iOS/macOS 应用界面（HIG）双模，含原型、幻灯片、设计系统与打印/PDF 交付。 |
+| [HtmlDesign](HtmlDesign/SKILL.md) | 制作 Apple 风格的 HTML 制品时使用：官网/营销页（apple.com 视觉）、仿 iOS/macOS 应用界面（HIG）、原型、幻灯片、设计系统、打印与 PDF 交付。 |
 | [HumanizerZh](HumanizerZh/SKILL.md) | 中文文本去 AI 味、改写得像人写，或做标点全半角归一化时使用。 |
 | [LongTaskPlaybook](LongTaskPlaybook/SKILL.md) | 处理 CLI/远程 API 长耗时任务，长任务不阻塞回合，先 ACK 再跟进。 |
 | [ManageSkills](ManageSkills/SKILL.md) | 当要创建技能、改进或评测现有技能、给技能改名、部署技能或部署前验证技能时使用。 |
-| [ObsidianVault](ObsidianVault/SKILL.md) | 在 Obsidian 仓库搜索、创建、管理笔记，支持 wikilink 与索引笔记。 |
 | [PersonaEcho](PersonaEcho/SKILL.md) | 把 colleague/relationship/celebrity 三类角色蒸馏成可复用技能。 |
 | [PolishCode](PolishCode/SKILL.md) | 提交前润色代码：复用、简化、效率、抽象层次，并行评审代理并应用修复。 |
 | [ProbeIntent](ProbeIntent/SKILL.md) | 动手构建前需求还含糊时使用：要加新功能、做新项目或新子系统，或需要头脑风暴、方案选型、把想法盘成设计共识时。 |
@@ -37,7 +36,7 @@ TwilightRainDev 的 Claude Code 技能（skill）聚合仓库，同时作为本�
 | [TDD](TDD/SKILL.md) | 实现功能或修 bug 前先写测试；先看失败，再写最少代码。 |
 | [ThinkFirst](ThinkFirst/SKILL.md) | 当任务变难、变长、变绕，你需要先想清楚再动手，或思路卡住、越做越乱时使用。一份极简思维引导：一个前提、三档投入、几条内部检查。可一眼检查或已有明确方法覆盖的任务不使用。 |
 | [VerifyFirst](VerifyFirst/SKILL.md) | 声称完成/修复/通过前先运行验证命令：先证据，后断言。 |
-| [WinBashTest](WinBashTest/SKILL.md) | Win和 Git Bash 环境下的 Vitest、Playwright 及 MSW 测试兼容性指南。 |
+| [WinBashTest](WinBashTest/SKILL.md) | Win和 Git Bash 环境下的 Vitest、Playwright 及 MSW 测试兼容性指南。含 grep -c CR 计行尾不可靠。 |
 | [WriteIssue](WriteIssue/SKILL.md) | 当用户要写 issue、report，或要向社区反馈报错问题时使用。不产出聊天式回答。 |
 | [WritePlan](WritePlan/SKILL.md) | 把需求/重构/规格转化为可执行实施计划（细粒度任务、小提交），可生成 PRD。 |
 

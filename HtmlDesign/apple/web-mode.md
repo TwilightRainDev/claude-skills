@@ -160,7 +160,7 @@ SF Pro 是 Apple 专有字体。离开 Apple 设备时：
 1. **用户提供的真实产品图** —— 永远优先。真实渲染图无法被合成替代。
    用 [`../starter-components/image-slot.js`](../starter-components/image-slot.js) 的 `<image-slot>` 组件把槽位直接交给用户：他把图片文件拖进槽位即可填充，填充结果经 sidecar 持久化，刷新、分享链接、导出 PPTX 都保留。**这是拿到真实产品图最省事的路径** —— 先摆好正确比例的槽位，让用户往里丢图，比自己去找图强。
    （`<image-slot>` 的 `shape` / `radius` / `mask` / `fit` 属性控制槽位形状；宿主运行时之外它是只读的。）
-2. **生成** —— 仅用于氛围图、纹理、背景意象，且环境确有图像后端时。按 [`../built-in-skills/generate-images.md`](../built-in-skills/generate-images.md) 检测并调用。
+2. **生成** —— 仅用于氛围图、纹理、背景意象，且环境确有图像后端时。按 [`../craft/sources/generate-images.md`](../craft/sources/generate-images.md) 检测并调用。
 3. **占位** —— 同上用 `<image-slot>`，但留空不填。
 
 > **占位优于糟糕的合成。** 这条立场与 `hi-fi-design` 一致：一张干净的占位块，比一张勉强生成的假产品图更接近可交付状态。AI 合成的人造产品图会立刻破坏这套语言的可信度 —— 它是奢侈品语境，破绽在这里代价极高。**不要用生成图冒充产品渲染图。**
@@ -267,3 +267,17 @@ SF Pro 是 Apple 专有字体。离开 Apple 设备时：
 - 不要给通版瓦片加圆角。
 - 正文行高不要低于 1.47。
 - **不要在浅色面上用 `#2997ff`** —— 它是暗瓦片专属变体。
+
+## CJK 排版
+
+> 与 `apple/design-language.md` 冲突时以后者为准。
+
+
+界面同时出现中文（或日文、韩文）与拉丁文时：
+
+- **用拉丁优先的系统 CJK 字体栈**，让每种文字都拿到正确的字形：
+  `font-family: -apple-system, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;`
+  （`web` mode 下正文/UI 用 `--font-text`、大字用 `--font-display`，都已在 `apple/web-tokens.css` 里定义好，直接引用即可；上例是无 token 可用时的兜底形态。）
+- **中文正文行高要比拉丁文更大**（阅读场景约 **1.7–1.8**）—— 汉字密度高，需要更多纵向空间。
+- **给内容打 `lang="zh"` / `lang="en"`**，浏览器才能选对字体与断行规则。
+- **多数"阅读型衬线"网页字体不覆盖 CJK。** 若提供衬线阅读模式，必须给拉丁衬线配一个中文衬线兜底（如 `"Newsreader", "Songti SC", "Noto Serif SC", serif`）—— 否则中文会静默回退到无衬线，衬线开关在中文文本上看起来就是坏的。

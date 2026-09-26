@@ -5,7 +5,10 @@ description: 当在本机做 GitHub 平台操作（建仓/推送/发布/PR/Relea
 
 # GitHubOps
 
-本机到 GitHub 的通路只有一条：**hosts 劫持 github.com → 127.0.0.1，再由 <LOCAL_PROXY> 本地代理转发**。没有备用出口——实测直连真实 IP 大面积超时，`env`/git config 里也没有任何 proxy 配置。
+通路、四可执行体与 TLS 见 `fact:github.network-diagnostics`。认证通道见 `fact:github.auth-channels`。
+通用代理条目分布见 `fact:network.proxy.s302`。本技能只留五阶段程序，不断言代理当前开关。
+
+本机到 GitHub 的通路只有 hosts 劫持加本地代理，没有备用出口。`env`/git config 里也没有任何 proxy 配置。
 
 因此 GitHub 操作失败时，几乎总能定位到这条链的某一环。核心原则：**先按症状把失败定位到具体环节，再动手**。在没定位之前重试、改配置或绕过，都只会让下一次失败更难解释。
 
