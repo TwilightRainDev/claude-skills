@@ -263,6 +263,17 @@
     --label-tertiary: rgba(235, 235, 245, 0.3);
     --label-quaternary: rgba(235, 235, 245, 0.18);
 
+    /* 深色模式下 -aa 变体回落为原色：这些值本身已达标（5.76–6.44），
+       不需要再向黑缩放。这一段是必须的 —— 少了它，任何在共享声明里
+       写了 -aa 的组件，在深色下会解析到浅色那份深值，深蓝压深底直接读不出来。
+       有了它，"正文用 -aa、深色一律原色"这条双轨才不需要组件自己分支模式。 */
+    --system-blue-aa: var(--system-blue);
+    --system-red-aa: var(--system-red);
+    --system-green-aa: var(--system-green);
+    --system-orange-aa: var(--system-orange);
+    --system-gray-aa: var(--system-gray);
+    --label-secondary-aa: var(--label-secondary);
+
     --fill-primary: rgba(120, 120, 128, 0.36);
     --fill-secondary: rgba(120, 120, 128, 0.32);
     --fill-tertiary: rgba(120, 120, 128, 0.24);

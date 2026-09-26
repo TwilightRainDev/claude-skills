@@ -13,13 +13,18 @@
   --primary-on-dark: #2997ff;
   --on-primary: #ffffff;
 
-  /* ---------- 表面 ---------- */
+  /* ---------- 表面 ----------
+     三种轮换：白 → 米白 → 黑。颜色变化本身就是分隔线。
+     深色瓦片用 --surface-tile-1（它等于正文色，这正是 apple.com 的做法）；
+     需要更重的通版深底（通版影像、视频）时用 --surface-tile-2。
+     不要再用"差一档的深灰"去分隔相邻暗瓦片 —— 那读起来像渲染误差，
+     不像节奏。深色区内部要抬起卡片就用 --surface-tile-3。 */
   --canvas: #ffffff;
   --canvas-parchment: #f5f5f7;
   --surface-pearl: #fafafc;
-  --surface-tile-1: #272729;
-  --surface-tile-2: #2a2a2c;
-  --surface-tile-3: #252527;
+  --surface-tile-1: #1d1d1f;
+  --surface-tile-2: #000000;
+  --surface-tile-3: #2c2c2e;
   --surface-black: #000000;
   --surface-chip-translucent: rgba(210, 210, 215, 0.64);
 
@@ -29,6 +34,8 @@
   --body-on-dark: #ffffff;
   --body-muted: #cccccc;
   --ink-muted-80: #333333;
+  /* 仅限禁用态文字（WCAG 对禁用控件豁免）。对白底 4.29:1、对米白 3.94:1，
+     作正文级文字不达 AA —— 法务小字、占位标签这类真实文字用 --ink-muted-80 */
   --ink-muted-48: #7a7a7a;
 
   /* ---------- 发丝线与分隔 ---------- */
@@ -42,46 +49,59 @@
   --font-display-alt: "Inter", system-ui, sans-serif; /* @kind font */
   --font-text-alt: "Inter", system-ui, sans-serif; /* @kind font */
 
-  /* ---------- 字号阶 ---------- */
-  --text-hero-display: 56px;
-  /* 主视觉标题的响应式降档（断点表：1068px → 40px 复用 display-lg，640px → 34px，419px → 28px） */
-  --text-hero-sm: 34px;
-  --text-hero-xs: 28px;
-  --text-display-lg: 40px;
-  --text-display-md: 34px;
-  --text-lead: 28px;
-  --text-lead-airy: 24px;
-  --text-tagline: 21px;
-  --text-button-large: 18px;
+  /* ---------- 字号阶 ----------
+     相对旧阶的三处改动，都是为了脱离"2015 官网"的观感：
+       1. 显示尺寸整体上移（主视觉 56 → 40–96 流式，瓦片标题 40 → 56）；
+       2. 显示级行高收紧（display-md 从 1.47 收到 1.15 —— 1.47 是当年
+          给多行分节标题留的松法，现在读起来是散的）；
+       3. 字距改用 em。旧阶是"一个尺寸配一个死 px 值"，主视觉一旦做成
+          流式，死值必然在某一端过紧或过松。 */
+  --text-hero-display: clamp(40px, 6.5vw, 96px); /* 流式，不再需要断点降档 */
+  --text-display-xl: 64px;   /* 分节宣言，一页最多用一次 */
+  --text-display-lg: 56px;   /* 产品瓦片标题 */
+  --text-display-md: 32px;   /* 分节标题 */
+  --text-lead: 24px;         /* 瓦片副文 */
+  --text-lead-airy: 21px;    /* 环境页导语 */
+  --text-tagline: 19px;      /* 子瓦片标语、子导航类目名 */
+  --text-eyebrow: 14px;      /* 眉标：压在标题上方的小字标签 */
+  --text-button-large: 17px;
   --text-body: 17px;
   --text-caption: 14px;
   --text-fine-print: 12px;
   --text-micro-legal: 10px;
 
-  /* ---------- 行高 ---------- */
-  --lh-hero-display: 1.07; /* @kind font */
-  --lh-display-lg: 1.1; /* @kind font */
-  --lh-display-md: 1.47; /* @kind font */
-  --lh-lead: 1.14; /* @kind font */
-  --lh-lead-airy: 1.5; /* @kind font */
-  --lh-tagline: 1.19; /* @kind font */
-  --lh-body: 1.47; /* @kind font */
-  --lh-body-strong: 1.24; /* @kind font */
-  --lh-caption: 1.43; /* @kind font */
-  --lh-caption-strong: 1.29; /* @kind font */
-  --lh-dense-link: 2.41;    /* @kind font *//* 页脚密集链接列，反常地松，是特性不是 bug */
-  --lh-fine-print: 1.0; /* @kind font */
+  /* ---------- 行高 ----------
+     与尺寸反向：显示级 1.04–1.15（紧），正文 1.5（松），
+     页脚密集链接列 2.2（反常地松，是特性不是 bug）。
+     中文正文要再放宽到 1.7–1.8，见 web-mode.md 的 CJK 节。 */
+  --lh-hero-display: 1.04; /* @kind font */
+  --lh-display-xl: 1.06; /* @kind font */
+  --lh-display-lg: 1.07; /* @kind font */
+  --lh-display-md: 1.15; /* @kind font */
+  --lh-lead: 1.3; /* @kind font */
+  --lh-lead-airy: 1.45; /* @kind font */
+  --lh-tagline: 1.25; /* @kind font */
+  --lh-eyebrow: 1.2; /* @kind font */
+  --lh-body: 1.5; /* @kind font */
+  --lh-body-strong: 1.35; /* @kind font */
+  --lh-caption: 1.45; /* @kind font */
+  --lh-caption-strong: 1.3; /* @kind font */
+  --lh-dense-link: 2.2; /* @kind font */
+  --lh-fine-print: 1.4; /* @kind font */
 
-  /* ---------- 字距（尺寸专属，绝不用一个值通吃） ---------- */
-  --ls-hero-display: -0.28px;
-  --ls-display-lg: 0; /* @kind font */
-  --ls-display-md: -0.374px;
-  --ls-lead: 0.196px;
-  --ls-tagline: 0.231px;
-  --ls-body: -0.374px;
-  --ls-caption: -0.224px;
-  --ls-fine-print: -0.12px;
-  --ls-micro-legal: -0.08px;
+  /* ---------- 字距（em，随字号缩放） ----------
+     大字负、正文近 0、眉标正。绝不用一个值通吃所有尺寸。 */
+  --ls-hero-display: -0.022em;
+  --ls-display-xl: -0.02em;
+  --ls-display-lg: -0.018em;
+  --ls-display-md: -0.012em;
+  --ls-lead: 0;
+  --ls-tagline: 0.004em;
+  --ls-eyebrow: 0.06em;   /* 眉标唯一该用正字距的地方 */
+  --ls-body: -0.01em;
+  --ls-caption: -0.008em;
+  --ls-fine-print: -0.006em;
+  --ls-micro-legal: -0.004em;
 
   /* ---------- 字重（阶梯 300/400/600/700，500 被刻意剔除） ---------- */
   --fw-light: 300; /* @kind font */
@@ -99,19 +119,33 @@
   --space-xxl: 48px;
   /* 脱离主阶梯的 64px：页脚纵向内边距与"瓦片标题上方至少 64px 空气"规则要求它 */
   --space-2xl: 64px;
-  --space-section: 80px;
+  --space-section: 96px;    /* 瓦片纵向内边距 */
+  --space-section-xl: 120px; /* 通版影像瓦片与宣言瓦片 */
 
-  /* ---------- 圆角 ---------- */
+  /* ---------- 圆角 ----------
+     通版瓦片依然是 0 —— 它要贴到视口边缘，切角会露馅。
+     卡片化编排（bento 网格、工具卡、影像卡）用 xl。 */
   --rounded-none: 0px;
   --rounded-xs: 5px;
   --rounded-sm: 8px;
   --rounded-md: 11px;
   --rounded-lg: 18px;
+  --rounded-xl: 28px;   /* bento 卡片与影像卡的现代半径 */
   --rounded-pill: 9999px;
 
   /* ---------- 纵深（全系统仅此一处投影，只给产品图） ---------- */
   --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
   --shadow-hairline: 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+  /* ---------- 影像上的文字保护层 ----------
+     文字压在摄影上时必须有一层 scrim 才读得出来。这是功能性的，
+     不是装饰性渐变 —— 页面底色、按钮、卡片上依然禁用渐变。
+
+     **必须锚在文字块上，不能锚在瓦片上。** 瓦片高度随视口变（fluid / min-height），
+     文字块高度却是固定的；把渐变铺满瓦片，换个视口文字就跑出强区，眉标直接掉到
+     3:1 以下。用法是给文字容器加一个向上溢出的 ::before，见 web-mode.md。 */
+  --scrim-top: linear-gradient(180deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.62) 48%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0) 100%);
+  --scrim-bottom: linear-gradient(0deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.62) 48%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0) 100%);
 
   /* ---------- 材质 ---------- */
   --blur-material: blur(20px) saturate(180%);
@@ -120,6 +154,9 @@
   /* ---------- 布局 ---------- */
   --container-text: 980px;
   --container-max: 1440px;
+  /* 页面级左右留白。内容容器用它，不要用 --space-lg（24px）——
+     1440 视口下 24px 的边距读起来是"内容顶到屏幕边"，那是旧的紧法。 */
+  --gutter-page: clamp(24px, 5vw, 96px);
   --nav-global-height: 44px;
   --nav-sub-height: 52px;
   --sticky-bar-height: 64px;
@@ -140,14 +177,17 @@
 }
 
 /* ---------- 断点（媒体查询里不能直接用变量，此处列出供参照） ----------
-   ≤ 419px  小手机    单列，主视觉 28px
-   420–640  手机      单列，h1 34px
-   641–735  大手机    瓦片纵向内边距 48px
+   ≤ 419px  小手机    单列，瓦片纵向内边距 48px
+   420–640  手机      单列
+   641–735  大手机    瓦片纵向内边距 64px
    736–833  平板竖    全局导航折叠为汉堡
-   834–1023 平板横    导航展开，3 列栅格变 2 列
-   1024–1068 小桌面   瓦片 2/3 宽
+   834–1023 平板横    导航展开，bento 3 列变 2 列
+   1024–1068 小桌面   瓦片占 2/3 宽
    1069–1440 桌面     完整布局
    ≥ 1441   宽桌面    内容锁 1440px
+   -------------------------------------------------------------------
+   主视觉字号不在这张表里 —— 它由 --text-hero-display 的 clamp 接管，
+   结构断点只管布局。
    ------------------------------------------------------------------- */
 
 /* ---------- 基础重置（制品可选，推荐保留） ---------- */

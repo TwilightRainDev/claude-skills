@@ -46,7 +46,7 @@ description: 制作 Apple 风格的 HTML 制品时使用：官网/营销页（ap
 
 | 文件 | mode | 内容 |
 |---|---|---|
-| `starter-components/apple-web-starter.html` | web | 整页瓦片节奏 + 导航/按钮/卡片/配置器/搜索/页脚 |
+| `starter-components/apple-web-starter.html` | web | 四种瓦片编排（宣言 / 分栏 / bento / 通版影像）+ 眉标 + 导航/按钮/卡片/配置器/搜索/页脚 |
 | `starter-components/apple-platform-starter.html` | platform | iOS/macOS 控件包：导航栏/分组列表/开关行/按钮/输入/分段控件/搜索/标签栏/Sheet/Alert/卡片 |
 
 标记约定：`<!-- [COMPONENT: slug] -->` 标单个组件；`[COMPONENT-FAMILY: slug]` 标一族变体（如 `button`、`product-tile`）。用 `grep -o '\[COMPONENT[^]]*\]'` 可列全。两个包都通过 `<link>` 引入对应的 `apple/*-tokens.css`，**cp 进项目时先改这处相对路径**。

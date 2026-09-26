@@ -29,6 +29,7 @@
 - [ ] `prefers-reduced-motion: reduce` 有**更温和的变体**（去掉位移、保留透明度/颜色），**不是** `0.01ms !important` 一刀切
 - [ ] `:hover` 运动被 `@media (hover: hover) and (pointer: fine)` 门控
 - [ ] 文字对比度：正文 4.5:1，大字 3:1
+- [ ] **压在影像上的文字单独验过。** 任何走 `background-color` 的对比度工具都量不到这一层 —— scrim 是渐变、底下是照片，工具只会读到元素自身的背景色然后给你一个假 PASS。这类文字必须实际渲染出来看（`llm-vision-mcp` 的 `analyze_image` 或 `describe_ui`），或在图最亮的那块像素上手工核。
 - [ ] **`platform` 浅色模式：正文级文字用了 `-aa` 变体**（Apple 系统色原值作正文只有 3.26–4.02，不达 AA）；图标/分隔线/大字/填充可用原色。判据见 `platform-mode.md` 的「对比度双轨」
 - [ ] 浮层（Sheet / Alert / 模态）**有焦点陷阱** —— 打开移入焦点、关闭归还、`Tab` 不逃逸到背后的页面。起步包未做 trap，真实项目必补
 - [ ] 语义化标签（`<button>` / `<nav aria-label>` / `<main>`）与 `aria-*` 完整

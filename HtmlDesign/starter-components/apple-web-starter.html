@@ -54,7 +54,10 @@
     margin: 0;
     padding: 0;
   }
-  .global-nav a {
+  /* :not(.btn) 不能省 —— 这条同时管着右上角那两枚 .btn--utility。
+     .global-nav a 是 (0,1,1)，高于 .btn--utility 的 (0,1,0)，不加限定按钮会
+     掉到 12px / -0.12px，而不是 web-mode.md 规定的 14px / -0.224px。 */
+  .global-nav a:not(.btn) {
     color: var(--body-on-dark);
     font-size: var(--text-fine-print);
     line-height: var(--lh-fine-print);
@@ -89,7 +92,10 @@
     letter-spacing: var(--ls-tagline);
   }
   .sub-nav__links { display: flex; align-items: center; gap: var(--space-lg); }
-  .sub-nav__links a {
+  /* :not(.btn) 不能省 —— 行末那枚"购买"是 .btn--primary。(0,1,1) 会盖掉
+     .btn--primary 的 (0,1,0)，把药丸里的白字变成 --ink，深色压 Action Blue
+     只剩 3.02:1，AA 不过。 */
+  .sub-nav__links a:not(.btn) {
     color: var(--ink);
     font-size: var(--text-caption);
     letter-spacing: var(--ls-caption);
@@ -143,12 +149,12 @@
     padding: 8px 15px;
     min-height: 0;
   }
-  /* 商店主视觉 CTA —— 仅此一处用 300 字重 */
+  /* 商店主视觉 CTA —— 比常规按钮大一圈的留白，不是更细的字重 */
   .btn--store {
     background: var(--primary);
     color: var(--on-primary);
     font-size: var(--text-button-large);
-    font-weight: var(--fw-light);
+    font-weight: var(--fw-regular);
     line-height: 1;
     border-radius: var(--rounded-pill);
     padding: 14px 28px;
@@ -164,6 +170,13 @@
     border-radius: var(--rounded-pill);
   }
   .btn:active { transform: scale(0.95); }
+
+  /* ---------- 断行 ----------
+     中文标题经常在末行只掉一个字（"…听不见的地 / 方。"），手工插 <br> 会在别的
+     宽度上崩。balance 让浏览器把行均分；正文用 pretty 避免末行孤字。
+     两者都是渐进增强，不支持的浏览器按正常断行走。 */
+  .hero-headline, .tile__headline, .section-title, .bento__title { text-wrap: balance; }
+  p { text-wrap: pretty; }
   .btn--primary:focus-visible,
   .btn--ghost:focus-visible {
     outline: 2px solid var(--primary-focus);
@@ -172,14 +185,135 @@
 
   /* ---------- [COMPONENT-FAMILY: product-tile] 瓦片 ---------- */
   .tile {
-    padding: var(--space-section) var(--space-lg);
+    padding: var(--space-section) var(--gutter-page);
     text-align: center;
     /* 瓦片之间 0 间隔：颜色变化本身就是分隔线，不要加边框或间距 */
   }
   .tile--light { background: var(--canvas); color: var(--ink); }
   .tile--parchment { background: var(--canvas-parchment); color: var(--ink); }
   .tile--dark { background: var(--surface-tile-1); color: var(--body-on-dark); }
-  .tile--dark-2 { background: var(--surface-tile-2); color: var(--body-on-dark); }
+  /* 纯黑只给通版影像瓦片当底。要分隔相邻暗瓦片请靠明暗对比（#1d1d1f ↔ #000），
+     不要用"差一档的深灰" —— 那读起来像渲染误差而不是节奏。 */
+  .tile--black { background: var(--surface-tile-2); color: var(--body-on-dark); }
+
+  /* ---------- [COMPONENT: eyebrow] 眉标 ----------
+     压在标题上方的小字标签。全阶唯一该用正字距的地方。 */
+  .eyebrow {
+    font-family: var(--font-text);
+    font-size: var(--text-eyebrow);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-eyebrow);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    margin: 0 0 var(--space-sm);
+  }
+  .tile--dark .eyebrow,
+  .tile--black .eyebrow { color: var(--body-muted); }
+  /* 压在影像上的眉标必须是纯白。--body-muted (#cccccc) 是给实色深底用的，
+     放到照片+scrim 上，14px 的字根本吃不住那点亮度差。 */
+  .tile--bleed .eyebrow { color: var(--body-on-dark); }
+
+  /* ---------- 编排 B：分栏瓦片 [COMPONENT: tile-split] ----------
+     文字一侧**左对齐** —— 全页一律居中是最典型的做旧信号。
+     1023px 及以下一律上下堆叠：并排是宽屏特权。 */
+  .tile--split { text-align: left; }
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-xxl);
+    max-width: var(--container-max);
+    margin: 0 auto;
+  }
+  .split--flip .split__media { order: -1; }
+  @media (max-width: 1023px) {
+    .split { grid-template-columns: 1fr; gap: var(--space-xl); }
+    .split--flip .split__media { order: 0; }
+  }
+  .split__copy > p { max-width: 34ch; }
+  .split__ctas {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: var(--space-lg);
+  }
+  .split__slot {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+  }
+  .split__slot--real { box-shadow: var(--shadow-product); }
+
+  /* ---------- 编排 C：bento 网格 [COMPONENT-FAMILY: bento-card] ----------
+     一次讲一组特性。卡片 xl（28px）圆角，彼此 24px 间隙。 */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    max-width: var(--container-max);
+    margin: 0 auto;
+    text-align: left;
+  }
+  @media (max-width: 1023px) { .bento { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px)  { .bento { grid-template-columns: 1fr; } }
+  .bento__card {
+    background: var(--canvas);
+    border-radius: var(--rounded-xl);
+    padding: var(--space-xl);
+    min-height: 240px;
+  }
+  .tile--dark .bento__card,
+  .tile--black .bento__card { background: var(--surface-tile-3); color: var(--body-on-dark); }
+  .bento__card--wide { grid-column: span 2; }
+  @media (max-width: 640px) { .bento__card--wide { grid-column: auto; } }
+  .bento__title {
+    font-family: var(--font-display);
+    font-size: var(--text-display-md);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-display-md);
+    letter-spacing: var(--ls-display-md);
+    margin: 0 0 var(--space-xs);
+  }
+  .bento__body {
+    font-size: var(--text-body);
+    margin: 0;
+    color: var(--ink-muted-80);
+  }
+  .tile--dark .bento__body,
+  .tile--black .bento__body { color: var(--body-muted); }
+
+  /* ---------- 编排 D：通版影像瓦片 [COMPONENT: tile-bleed] ----------
+     摄影铺满，文字压在图上。scrim 是功能件不是装饰件：不加的话白字能不能读
+     完全取决于镜头碰巧拍到了多亮的像素，换一张图就崩。 */
+  .tile--bleed {
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-height: min(78vh, 760px);
+    padding: 0;
+    color: var(--body-on-dark);
+    background: var(--surface-tile-2);
+    overflow: hidden;
+  }
+  .bleed__slot { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .bleed__copy {
+    position: relative;
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--gutter-page) var(--space-section-xl);
+    text-align: left;
+  }
+  /* scrim 锚在文字块上，不锚在瓦片上 —— 瓦片高度随视口变，文字块高度固定，
+     锚瓦片的话换个视口文字就跑出强区。伪元素先于子元素绘制，不用 z-index。 */
+  .bleed__copy::before {
+    content: "";
+    position: absolute;
+    inset: -110% -100% 0 -100%;
+    background: var(--scrim-bottom);
+    pointer-events: none;
+  }
+  .bleed__copy > p { max-width: 30ch; }
   .tile__headline {
     font-family: var(--font-display);
     font-size: var(--text-display-lg);
@@ -198,8 +332,13 @@
   }
   .tile--dark .tile__tagline { color: var(--body-muted); }
   .tile__ctas { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; }
-  /* 暗瓦片上的正文内链接用 Sky Link Blue */
-  .tile--dark a { color: var(--primary-on-dark); }
+  /* 暗瓦片上的正文内链接用 Sky Link Blue。这里有两处容易漏：
+     - :not(.btn)：暗瓦片里放着 .btn--primary，(0,1,1) 会把药丸里的白字
+       盖成 Sky Blue —— 蓝压蓝只剩 1.85:1，几乎读不出来；
+     - .tile--black：漏掉它，该瓦片里的链接会退回浏览器默认蓝 #0000EE，
+       压纯黑只有 1.5:1 上下。 */
+  .tile--dark a:not(.btn),
+  .tile--black a:not(.btn) { color: var(--primary-on-dark); }
 
   /* [COMPONENT: hero-display] 主视觉标题 —— 负字距是"Apple 紧"的来源 */
   .hero-headline {
@@ -210,9 +349,8 @@
     letter-spacing: var(--ls-hero-display);
     margin: 0 0 var(--space-sm);
   }
-  @media (max-width: 1068px) { .hero-headline { font-size: var(--text-display-lg); } }
-  @media (max-width: 640px)  { .hero-headline { font-size: var(--text-hero-sm); } }
-  @media (max-width: 419px)  { .hero-headline { font-size: var(--text-hero-xs); } }
+  /* 主视觉字号由 --text-hero-display 的 clamp(40px, 6.5vw, 96px) 接管，
+     这里不再按断点降档 —— 旧阶的 hero-sm / hero-xs 两个 token 已随之下线。 */
 
   /* [COMPONENT: product-render] 产品渲染图槽位
      用 <image-slot> 承担 —— 用户把真实产品图直接拖进槽位，经 sidecar 持久化。
@@ -228,15 +366,19 @@
   .render-slot--real { box-shadow: var(--shadow-product); }
 
   /* 暗瓦片上的槽位：<image-slot> 的占位文字写死为 rgba(0,0,0,0.55)，
-     压在 --surface-tile-1 (#272729) 上对比度约 1.3:1，等于看不见。
+     压在 --surface-tile-1 (#1d1d1f) 上对比度约 1.2:1，等于看不见。
      组件暴露了 ::part(empty)，从外部覆写；图标是 stroke="currentColor"，
      .cap 未声明颜色，所以这一条同时救活图标与文字。 */
   .tile--dark .render-slot::part(empty),
-  .tile--dark-2 .render-slot::part(empty) {
+  .tile--black .render-slot::part(empty),
+  .tile--dark .split__slot::part(empty),
+  .tile--bleed .bleed__slot::part(empty) {
     color: var(--body-muted);
   }
   .tile--dark .render-slot::part(ring),
-  .tile--dark-2 .render-slot::part(ring) {
+  .tile--black .render-slot::part(ring),
+  .tile--dark .split__slot::part(ring),
+  .tile--bleed .bleed__slot::part(ring) {
     border-color: rgba(255, 255, 255, 0.24);
   }
 
@@ -267,7 +409,8 @@
     margin-bottom: var(--space-lg);
     display: grid;
     place-items: center;
-    color: var(--ink-muted-48);
+    /* 不用 --ink-muted-48：压米白 #f5f5f7 只有 3.94:1，12px 属正文级，AA 不过 */
+    color: var(--ink-muted-80);
     font-size: var(--text-fine-print);
   }
   .store-card__name {
@@ -330,7 +473,7 @@
   .site-footer {
     background: var(--canvas-parchment);
     color: var(--ink-muted-80);
-    padding: var(--space-2xl) var(--space-lg);
+    padding: var(--space-2xl) var(--gutter-page);
   }
   .site-footer__cols {
     display: grid;
@@ -361,7 +504,8 @@
     border-top: 1px solid var(--hairline);
     font-size: var(--text-fine-print);
     letter-spacing: var(--ls-fine-print);
-    color: var(--ink-muted-48);
+    /* 同上：法务小字是正文级文字，--ink-muted-48 不达 AA */
+    color: var(--ink-muted-80);
   }
   .site-footer__legal a { color: var(--primary); }
 
@@ -434,6 +578,7 @@
        瓦片纵向内边距 80px，标题上方至少 64px 空气。
        ========================================================== -->
   <section class="tile tile--light">
+    <p class="eyebrow">全新</p>
     <h1 class="hero-headline">iPhone 17 Pro</h1>
     <p class="tile__tagline">强得很克制。</p>
     <div class="tile__ctas">
@@ -447,24 +592,72 @@
   </section>
 
   <!-- ==========================================================
-       [COMPONENT: product-tile-dark] 暗瓦片
-       颜色变化本身就是分隔线 —— 瓦片之间没有间距、没有边框。
-       暗面上的正文内链接改用 Sky Link Blue。
+       [COMPONENT: tile-bleed] 编排 D —— 通版影像瓦片
+       摄影铺满，文字压在图上，配 --scrim-bottom。一页 1–2 次，是情绪的落点。
+       注意 scrim 只从底部渐隐 —— 它保护文字，不是给整张图加滤镜。
        ========================================================== -->
-  <section class="tile tile--dark">
-    <h2 class="tile__headline">A19 Pro 芯片</h2>
-    <p class="tile__tagline">每一瓦特都算数。</p>
-    <div class="tile__ctas">
-      <a class="btn btn--primary" href="#">了解更多</a>
+  <section class="tile tile--bleed">
+    <image-slot class="bleed__slot" id="bleed-hero" shape="rect" fit="cover"
+                placeholder="拖入通版影像（横构图，建议 2560 x 1440）"></image-slot>
+    <div class="bleed__copy">
+      <p class="eyebrow">相机系统</p>
+      <h2 class="tile__headline">随手一拍，皆是作品。</h2>
+      <div class="split__ctas">
+        <a class="btn btn--primary" href="#">了解更多</a>
+      </div>
     </div>
-    <image-slot class="render-slot" id="dark-render" shape="rect" fit="contain"
-                placeholder="拖入产品渲染图"></image-slot>
   </section>
 
-  <!-- [COMPONENT: product-tile-dark-2] 微亮一档的暗瓦片，制造极淡分隔 -->
-  <section class="tile tile--dark-2">
-    <h2 class="tile__headline">相机系统</h2>
-    <p class="tile__tagline">随手一拍，皆是作品。详见<a href="#">影像技术</a>。</p>
+  <!-- ==========================================================
+       [COMPONENT: tile-split] 编排 B —— 分栏瓦片
+       文字一侧左对齐，影像一侧占另一半。相邻瓦片用 .split--flip 左右互换。
+       1023px 及以下自动堆叠 —— 并排是宽屏特权。
+       ========================================================== -->
+  <section class="tile tile--dark tile--split">
+    <div class="split">
+      <div class="split__copy">
+        <p class="eyebrow">A19 Pro</p>
+        <h2 class="tile__headline">每一瓦特都算数。</h2>
+        <p>六个效率核心重新分工，把待机功耗压到上一代的六成。原理详见<a href="#">芯片架构说明</a>。</p>
+        <div class="split__ctas">
+          <a class="btn btn--primary" href="#">了解更多</a>
+        </div>
+      </div>
+      <div class="split__media">
+        <image-slot class="split__slot" id="chip-render" shape="rect" fit="contain"
+                    placeholder="拖入产品渲染图（4:3，带透明 PNG）"></image-slot>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       [COMPONENT-FAMILY: bento-card] 编排 C —— bento 网格
+       一次讲一组特性。卡片 xl（28px）圆角，米白底上浮白卡。
+       ========================================================== -->
+  <section class="tile tile--parchment">
+    <h2 class="section-title">为什么值得换</h2>
+    <div class="bento">
+      <article class="bento__card bento__card--wide">
+        <h3 class="bento__title">全天候续航</h3>
+        <p class="bento__body">视频播放最长 33 小时，比上一代多 4 小时。</p>
+      </article>
+      <article class="bento__card">
+        <h3 class="bento__title">卫星通信</h3>
+        <p class="bento__body">没有信号的地方也能发出求助。</p>
+      </article>
+      <article class="bento__card">
+        <h3 class="bento__title">抗刮背板</h3>
+        <p class="bento__body">第二代超瓷晶面板。</p>
+      </article>
+      <article class="bento__card">
+        <h3 class="bento__title">USB-C 3</h3>
+        <p class="bento__body">传输速度最高 10Gb/s。</p>
+      </article>
+      <article class="bento__card">
+        <h3 class="bento__title">动作按钮</h3>
+        <p class="bento__body">一键直达你常用的功能。</p>
+      </article>
+    </div>
   </section>
 
   <!-- ==========================================================
