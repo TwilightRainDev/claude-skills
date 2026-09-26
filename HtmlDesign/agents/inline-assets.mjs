@@ -19,9 +19,11 @@
 //
 // NOT covered — left exactly as they were, and NOT reported as unresolved:
 //   iframe src, embed src, object data, input[type=image] src and any other
-//   element/attribute outside the list above; markup inside HTML comments,
-//   <script> bodies and CSS comments (none of it is rendered or loaded);
-//   resources referenced only from a JavaScript/JSX string.
+//   element/attribute outside the list above; markup inside HTML comments, CSS
+//   comments and the raw text elements (script, style, title, textarea, xmp,
+//   iframe, noembed, noframes, noscript — none of it is markup to the browser
+//   either, so nothing in it loads); resources referenced only from a
+//   JavaScript/JSX string.
 //
 // Remote URLs (http:, https:, //), drive paths (C:\..., C:foo) and UNC paths
 // (\\srv\share\...) are not files beside the page, so they are left as they are.
@@ -39,7 +41,9 @@
 //   CSS     `/*` / `*/` occur inside strings, quotes occur inside comments, and
 //           url("a(1).png") has parentheses inside a quoted URL;
 //   HTML    `<!--`, `<script`, `<style` inside a quoted attribute value must
-//           stay text.
+//           stay text, and a comment ends only where the tokenizer says it does
+//           (`-->`, `--!>`, or an abrupt close) — a region that runs long
+//           swallows every reference after it, silently.
 //
 // Usage:
 //   node inline-assets.mjs <input.html> <output.html>
@@ -598,51 +602,250 @@ function renderTag(name, raw, baseDir) {
 // tags and <style> bodies are transformed; everything else is copied byte for
 // byte, which is what keeps `<!--` inside a quoted attribute value, markup
 // inside a comment, and JavaScript inside a <script> body out of the way.
+//
+// Where a region ENDS is the tokenizer's decision, and getting it wrong is
+// silent in both directions — a region cut short misses a reference, a region
+// run long swallows every reference after it. So the states below are the
+// tokenizer's states, not a shape that happens to fit the fixtures:
+//
+//   comment  ends at `-->`, at `--!>`, or by abrupt closing (`<!-->` and
+//            `<!--->` are complete comments). A `--` NOT followed by `>` or
+//            `!>` is comment data, so `<!-- x -- >` and an unterminated
+//            `<!--` run to the end of the document — the browser puts the rest
+//            of the file in the comment too, nothing in it loads, and leaving
+//            it alone is the correct answer rather than a loud one.
+//   bogus    `<!...` that is not a comment, `<?...`, and `</` + a non-letter
+//            are one token ending at the first `>` (a declaration, a bogus
+//            comment — the extent is the same), so a `<script` written inside
+//            one is text and does not open a raw text element.
+//   raw text the RCDATA and RAWTEXT elements hold text until their OWN end
+//            tag, so a `<script` inside `<title>`, `<textarea>`, `<xmp>`,
+//            `<noembed>` or `<noframes>` is text, and the elements that come
+//            after the raw text element are still elements.
 
 const TAG_AT_RE = /<([a-zA-Z][a-zA-Z0-9:-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/y;
 
+// Elements whose content is text, not markup: the tokenizer's RCDATA pair
+// (title, textarea) plus its RAWTEXT set. The two sets differ only in whether
+// character references are decoded, which cannot matter here — both end at
+// their own end tag and both treat `<script` in the body as text. `noscript`
+// is raw text while scripting is enabled, which is the browser default and so
+// the reading the exported page has to match.
+const RAW_TEXT_TAGS = new Set([
+  'title',
+  'textarea',
+  'script',
+  'style',
+  'xmp',
+  'iframe',
+  'noembed',
+  'noframes',
+  'noscript',
+]);
+
+// `<plaintext>` never leaves the tokenizer's PLAINTEXT state: everything after
+// the start tag is text, to the end of the file.
+const TEXT_TO_EOF_TAGS = new Set(['plaintext']);
+
+// Case-insensitive without building a lowercased copy of the document: U+0130
+// `İ` is the one character whose toLowerCase() is two code units long, and a
+// lowercased copy plus offsets taken from the original silently desynchronises
+// every index after it.
+function isAsciiAlpha(c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+// The whitespace the tokenizer uses to delimit a tag name. Deliberately not
+// /\s/, which also matches NBSP and friends — the tokenizer appends those to
+// the tag name, so `</style` followed by U+00A0 does not close a <style> element.
+function isTagSpace(c) {
+  return c === ' ' || c === '\t' || c === '\n' || c === '\f' || c === '\r';
+}
+
+// End of the token starting at `<!` / `<?` / `</`-without-a-letter: the first
+// `>`. `<!DOCTYPE html>`, `<!anything>`, `<?xml ... ?>`, `<![CDATA[` outside
+// SVG (a bogus comment) and `</ 3>` all have this extent in the tokenizer.
+function endOfDeclaration(html, i) {
+  const gt = html.indexOf('>', i + 2);
+  return gt === -1 ? html.length : gt + 1;
+}
+
+// End of the tag whose `<` is at html[i]: just past its `>`. A `>` inside a
+// quoted attribute value does not end a tag in the tokenizer either, and an
+// unterminated quote runs to the end of the document.
+function endOfTag(html, i) {
+  let j = i + 1;
+  while (j < html.length) {
+    const c = html[j];
+    if (c === '"' || c === "'") {
+      const close = html.indexOf(c, j + 1);
+      if (close === -1) return html.length;
+      j = close + 1;
+      continue;
+    }
+    if (c === '>') return j + 1;
+    j++;
+  }
+  return html.length;
+}
+
+// End of the comment whose `<!--` is at html[i] — the tokenizer's comment
+// states, which are the only thing that knows where a comment ends. Two of the
+// subtleties are load-bearing and neither is guessed at from examples:
+//   - `--` ends the comment only when `>` or `!>` follows it; a `--` followed
+//     by anything else is comment data, so `<!-- x -- >` is still a comment;
+//   - a `<!` inside the comment re-enters the same terminator grammar, which is
+//     why `<!--<!-->` is a complete comment.
+// Returns html.length for an unterminated comment, which is where the
+// tokenizer leaves it too: EOF in a comment state emits the comment and stops,
+// so everything after an unterminated `<!--` is comment text and nothing in it
+// is loaded.
+function endOfComment(html, i) {
+  const START = 0; // just after `<!--`
+  const START_DASH = 1; // ... followed by `-`
+  const BODY = 2; // comment data
+  const LT = 3; // ... a `<` in the data
+  const LT_BANG = 4; // ... and a `!` straight after it
+  const LT_BANG_DASH = 5;
+  const LT_BANG_DASH_DASH = 6;
+  const END_DASH = 7; // ... a `-` in the data
+  const END = 8; // ... `--`
+  const END_BANG = 9; // ... `--!`
+  let state = START;
+  let j = i + 4;
+  while (j < html.length) {
+    const c = html[j];
+    if (state === START || state === START_DASH) {
+      if (c === '>') return j + 1; // <!--> and <!--->: abruptly closed
+      if (c === '-') state = state === START ? START_DASH : END;
+      else {
+        state = BODY; // the `-` that got us here is comment data
+        continue; // reconsume
+      }
+    } else if (state === BODY) {
+      if (c === '-') state = END_DASH;
+      else if (c === '<') state = LT;
+    } else if (state === LT) {
+      if (c === '!') state = LT_BANG; // the `!` is data; it is consumed here
+      else if (c !== '<') {
+        state = BODY;
+        continue;
+      }
+      // a further `<` keeps the run going and is consumed
+    } else if (state === LT_BANG) {
+      if (c !== '-') {
+        state = BODY;
+        continue;
+      }
+      state = LT_BANG_DASH;
+    } else if (state === LT_BANG_DASH) {
+      // `<!-` only reaches the end state with a SECOND `-`; a single `-` then
+      // anything else is plain comment data (`<!--<!->>` does not end).
+      state = c === '-' ? LT_BANG_DASH_DASH : BODY;
+      continue;
+    } else if (state === LT_BANG_DASH_DASH) {
+      state = END; // `>` is reconsume-tested against the end state
+      continue;
+    } else if (state === END_DASH) {
+      if (c !== '-') {
+        state = BODY;
+        continue;
+      }
+      state = END;
+    } else if (state === END) {
+      if (c === '>') return j + 1; // -->
+      if (c === '!') state = END_BANG;
+      else if (c !== '-') {
+        state = BODY;
+        continue;
+      }
+    } else {
+      // END_BANG
+      if (c === '>') return j + 1; // --!>
+      state = c === '-' ? END_DASH : BODY;
+      if (state === BODY) continue;
+    }
+    j++;
+  }
+  return html.length;
+}
+
+// End of the text of a raw text element: the `</` of its own end tag, or -1
+// when the element is never closed. A tag name that merely starts with the
+// element's name (`</stylex>`) is text inside the element, so the search keeps
+// going from there.
+function endOfRawText(html, from, name) {
+  const needle = `</${name}`;
+  for (let at = from; ; ) {
+    const k = html.indexOf('</', at);
+    if (k === -1) return -1;
+    const after = html[k + needle.length];
+    if (matchesAt(html, k, needle) && (after === '>' || after === '/' || isTagSpace(after))) {
+      return k;
+    }
+    at = k + 2;
+  }
+}
+
 function processHtml(html, baseDir) {
-  const lower = html.toLowerCase();
   let out = '';
   let i = 0;
   while (i < html.length) {
+    if (html[i] !== '<') {
+      out += html[i];
+      i++;
+      continue;
+    }
     if (html.startsWith('<!--', i)) {
-      const close = html.indexOf('-->', i + 4);
-      const end = close === -1 ? html.length : close + 3;
+      const end = endOfComment(html, i);
       out += html.slice(i, end);
       i = end;
       continue;
     }
-    if (html[i] === '<') {
-      TAG_AT_RE.lastIndex = i;
-      const m = TAG_AT_RE.exec(html);
-      if (m) {
-        const name = m[1];
-        const raw = m[2];
-        const t = name.toLowerCase();
-        const tagEnd = i + m[0].length;
-        if (t === 'script' || t === 'style') {
-          let closeAt = lower.indexOf(`</${t}`, tagEnd);
-          if (closeAt === -1) closeAt = html.length;
-          let closeEnd = html.length;
-          if (closeAt < html.length) {
-            const gt = html.indexOf('>', closeAt);
-            closeEnd = gt === -1 ? html.length : gt + 1;
-          }
-          out += renderTag(name, raw, baseDir);
-          const body = html.slice(tagEnd, closeAt);
-          out += t === 'style' ? styleElementText(processCss(body, baseDir, true)) : body;
-          out += html.slice(closeAt, closeEnd);
-          i = closeEnd;
-          continue;
-        }
-        out += renderTag(name, raw, baseDir);
-        i = tagEnd;
-        continue;
-      }
+    const next = html[i + 1];
+    if (next === '!' || next === '?' || (next === '/' && !isAsciiAlpha(html[i + 2]))) {
+      const end = endOfDeclaration(html, i);
+      out += html.slice(i, end);
+      i = end;
+      continue;
     }
-    out += html[i];
-    i++;
+    if (next === '/') {
+      const end = endOfTag(html, i);
+      out += html.slice(i, end); // an end tag carries no resource URL
+      i = end;
+      continue;
+    }
+    TAG_AT_RE.lastIndex = i;
+    const m = TAG_AT_RE.exec(html);
+    if (!m) {
+      out += '<';
+      i++;
+      continue;
+    }
+    const name = m[1];
+    const t = name.toLowerCase();
+    const tagEnd = i + m[0].length;
+    out += renderTag(name, m[2], baseDir);
+    if (TEXT_TO_EOF_TAGS.has(t)) {
+      out += html.slice(tagEnd); // <plaintext>: the rest of the file is text
+      break;
+    }
+    if (RAW_TEXT_TAGS.has(t)) {
+      const closeAt = endOfRawText(html, tagEnd, t);
+      // Never closed: the tokenizer keeps the element open to the end of the
+      // document, so everything after it is its text — not markup, and nothing
+      // in it is loaded by the browser.
+      const body = html.slice(tagEnd, closeAt === -1 ? html.length : closeAt);
+      // <style> is the one raw text element whose text has a grammar of its
+      // own; every other one is copied byte for byte.
+      out += t === 'style' ? styleElementText(processCss(body, baseDir, true)) : body;
+      if (closeAt === -1) break;
+      const closeEnd = endOfTag(html, closeAt);
+      out += html.slice(closeAt, closeEnd);
+      i = closeEnd;
+      continue;
+    }
+    i = tagEnd;
   }
   return out;
 }
