@@ -66,7 +66,7 @@ description: Windows 环境事实快查表与路由。遇到环境敏感任务�
 - **行尾/编码结论要有字节级证据**，不能凭 `grep` 或肉眼。
 - **筛选器可能静默失效**是通用假设，不限于某个具体参数。
 
-PowerShell 枚举陷阱的完整取证（10 个变体的原始实测输出）见 `<WORKSPACE>\Docs\lesson-recursive-delete-trap.md`；工作区级规则见 `CLAUDE.md` §8。此处只留路由与判据，细节不在本表重复。
+PowerShell 枚举陷阱的完整取证（10 个变体的原始实测输出）见 `<WORKSPACE>\ClaudeCode\forensics\lesson-recursive-delete-trap.md`；工作区级规则见 `CLAUDE.md` §8。此处只留路由与判据，细节不在本表重复。
 
 ## 实测兜底（只测动态项，只读命令）
 

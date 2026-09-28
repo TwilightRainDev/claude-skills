@@ -109,7 +109,7 @@ description: 任何会话与任务开始前先检查是否有适用技能，再�
 | 任务变难变绕、思路卡住，需要先想清楚再动手 | `ThinkFirst` |
 | 中文编码安全基线，遇到乱码使用 | `EncodingGuide` |
 | Git 操作（本地仓库、分支、历史改写） | `GitMaster` |
-| GitHub 平台操作与通路故障（建仓 / 推送 / 发布 / PR / Release、连接被拒 / 证书 / 502 / 404） | `GitHubOps` |
+| GitHub 所有平台操作指导与通路故障 | `GitHubOps` |
 | 启动并实际运行应用确认改动生效 | `run`（插件） |
 | 定时或循环执行某个任务或命令 | `loop`（插件） |
 | 长耗时命令 / 远程 API 任务 | `LongTaskPlaybook` |
